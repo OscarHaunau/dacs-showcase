@@ -1,0 +1,7 @@
+<div class="toast-wrap">
+  <div *ngFor="let m of toast.messages()" class="toast" [class.success]="m.type==='success'" [class.error]="m.type==='error'">
+    {{ m.text }}
+  </div>
+  <style>
+  </style>
+</div>

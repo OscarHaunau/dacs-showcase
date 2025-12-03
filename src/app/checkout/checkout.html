@@ -1,0 +1,21 @@
+<div class="page" *ngIf="raffle as r">
+  <header class="topbar">
+    <button class="ghost" (click)="cancel()">← Volver</button>
+    <h3>Checkout</h3>
+  </header>
+  <section class="card">
+    <div class="summary">
+      <div>Sorteo: <strong>{{ r.name }}</strong></div>
+      <div>Número: <strong>{{ number }}</strong></div>
+      <div>Precio: <strong>{{ r.price | number:'1.0-0' }}</strong></div>
+    </div>
+    <div class="grid">
+      <label>Nombre <input [(ngModel)]="name"></label>
+      <label>Email <input type="email" [(ngModel)]="email"></label>
+      <label>Teléfono <input [(ngModel)]="phone"></label>
+    </div>
+    <div class="actions">
+      <button class="primary" (click)="submit()">Confirmar compra</button>
+    </div>
+  </section>
+</div>

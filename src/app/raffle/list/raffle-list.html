@@ -1,0 +1,23 @@
+<div class="page">
+  <header class="page-header">
+    <a class="back" routerLink="/">← Volver al inicio</a>
+    <div class="head-text">
+      <h2>Sorteos Activos</h2>
+      <div class="sub">Busca y participa en los sorteos disponibles</div>
+    </div>
+    <div class="search">
+      <span class="icon">🔍</span>
+      <input type="text" placeholder="Buscar por nombre u organizador" (input)="query.set($any($event.target).value)" />
+    </div>
+  </header>
+
+  <div class="count" *ngIf="raffles().length > 0">{{ raffles().length }} sorteos encontrados</div>
+
+  <div *ngIf="raffles().length === 0" class="empty">No encontramos sorteos activos.</div>
+
+  <div class="grid">
+    <app-raffle-card *ngFor="let r of raffles()" [raffle]="r">
+      <button class="primary" (click)="viewRaffle(r.id)">Ver Sorteo</button>
+    </app-raffle-card>
+  </div>
+</div>

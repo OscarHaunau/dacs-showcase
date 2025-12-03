@@ -1,0 +1,57 @@
+<div class="page">
+  <h2>Demo de Dominio</h2>
+
+  <section class="card">
+    <h3>Crear sorteo</h3>
+    <div class="grid">
+      <label>Premio <input [(ngModel)]="nombrePremio"></label>
+      <label>Descripción premio <input [(ngModel)]="descripcionPremio"></label>
+      <label>Valor premio <input type="number" [(ngModel)]="valorPremio"></label>
+      <label>Descripción sorteo <input [(ngModel)]="descripcionSorteo"></label>
+      <label>Precio número <input type="number" [(ngModel)]="precioNumero"></label>
+    </div>
+    <button class="primary" (click)="crearSorteo()">Crear sorteo</button>
+  </section>
+
+  <section class="card" *ngIf="dom.actual() as s">
+    <h3>Generar números</h3>
+    <div class="row">
+      <label>Inicial <input type="number" [(ngModel)]="inicial"></label>
+      <label>Cantidad <input type="number" [(ngModel)]="cantidad"></label>
+      <button class="ghost" (click)="generar()">Generar</button>
+    </div>
+    <div class="nums">
+      <button class="num" *ngFor="let n of s.numeros" [class.sold]="n.estado==='VENDIDO'" [class.proc]="n.estado==='EN_PROCESO'" (click)="numeroValor = n.valor">{{ n.valor }}</button>
+    </div>
+    <div class="stats">
+      <span>Total: {{ dom.estadisticas(s).total }}</span>
+      <span>Vendidos: {{ dom.estadisticas(s).vendidos }}</span>
+      <span>Proceso: {{ dom.estadisticas(s).enProceso }}</span>
+      <span>Disponibles: {{ dom.estadisticas(s).disponibles }}</span>
+    </div>
+  </section>
+
+  <section class="card" *ngIf="dom.actual() as s">
+    <h3>Participante y compra</h3>
+    <div class="grid">
+      <label>Nombre <input [(ngModel)]="nombre"></label>
+      <label>DNI <input [(ngModel)]="dni"></label>
+      <label>Email <input [(ngModel)]="email" type="email"></label>
+      <label>Teléfono <input [(ngModel)]="telefono"></label>
+    </div>
+    <div class="row">
+      <label>Número seleccionado <input type="number" [(ngModel)]="numeroValor"></label>
+      <label>Método
+        <select [(ngModel)]="metodo">
+          <option [ngValue]="MetodoPago.MP">MercadoPago</option>
+          <option [ngValue]="MetodoPago.EFECTIVO">Efectivo</option>
+        </select>
+      </label>
+      <button class="primary" (click)="comprar()">Comprar</button>
+    </div>
+    <div class="result" *ngIf="resultado">
+      <div>{{ resultado.mensaje }}</div>
+      <div *ngIf="resultado.comprobante">Comprobante: <code>{{ resultado.comprobante }}</code></div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,21 @@
+<div class="page">
+  <header class="topbar">
+    <button class="ghost" (click)="cancel()">← Volver</button>
+    <h3>{{ mode === 'new' ? 'Nuevo Sorteo' : 'Editar Sorteo' }}</h3>
+  </header>
+
+  <section class="card">
+    <div class="grid">
+      <label>Nombre <input [(ngModel)]="name"></label>
+      <label>Organizador <input [(ngModel)]="organizer"></label>
+      <label>Alias <input [(ngModel)]="alias"></label>
+      <label>Descripción <input [(ngModel)]="description"></label>
+      <label>Fecha sorteo <input type="datetime-local" [(ngModel)]="raffleDate"></label>
+      <label>Precio por número <input type="number" [(ngModel)]="price"></label>
+      <label>Cantidad de números <input type="number" [(ngModel)]="count"></label>
+    </div>
+    <div class="actions">
+      <button class="primary" (click)="save()">Guardar</button>
+    </div>
+  </section>
+</div>

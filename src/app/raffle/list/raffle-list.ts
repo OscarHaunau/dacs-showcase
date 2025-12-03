@@ -1,0 +1,35 @@
+import { Component, effect, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { RaffleStateService } from '../../core/services/raffle-state.service';
+import { Raffle } from '../../core/models/raffle';
+import { RaffleCardComponent } from '../../components/raffle-card/raffle-card';
+
+@Component({
+  selector: 'app-raffle-list',
+  standalone: true,
+  imports: [CommonModule, RaffleCardComponent],
+  templateUrl: './raffle-list.html',
+  styleUrls: ['./raffle-list.css']
+})
+export class RaffleListComponent {
+  query = signal('');
+  raffles = signal<Raffle[]>([]);
+
+  constructor(private state: RaffleStateService, private router: Router) {
+    effect(() => {
+      const q = this.query().toLowerCase();
+      const base = this.state.getRaffles();
+      this.raffles.set(
+        base.filter(r =>
+          r.name.toLowerCase().includes(q) || r.organizer.toLowerCase().includes(q)
+        )
+      );
+    });
+    this.raffles.set(this.state.getRaffles());
+  }
+
+  viewRaffle(id: string) {
+    this.router.navigate(['/raffle', id]);
+  }
+}

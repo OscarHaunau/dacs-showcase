@@ -1,0 +1,6 @@
+.stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin: 12px 0; }
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr);} }
+.card { background:#fff; border-radius:12px; padding:12px; box-shadow:0 8px 18px rgba(0,0,0,0.08); }
+.label { color:#64748b; font-size:12px; }
+.value { font-weight:800; font-size:20px; }
+.hint { color:#94a3b8; font-size:12px; margin-top:4px; }

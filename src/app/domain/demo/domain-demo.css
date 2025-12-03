@@ -1,0 +1,14 @@
+.page { padding: 16px; display: grid; gap: 16px; }
+.card { border: 1px solid #e3e3e3; border-radius: 8px; padding: 12px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(200px, 1fr)); gap: 8px; align-items: center; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.nums { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.num { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa; cursor: pointer; }
+.num.sold { background: #ffe6e6; border-color: #ff6b6b; }
+.num.proc { background: #fff6e0; border-color: #ffb54a; }
+.stats { display: flex; gap: 12px; margin-top: 8px; font-size: 0.9rem; color: #555; }
+.primary { background: #1976d2; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+.ghost { background: transparent; color: #1976d2; border: 1px solid #1976d2; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.result { margin-top: 8px; }
+label { display: flex; gap: 6px; align-items: center; }
+input, select { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; }

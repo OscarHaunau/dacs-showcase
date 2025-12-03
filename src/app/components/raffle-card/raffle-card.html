@@ -1,0 +1,27 @@
+<div class="card">
+  <a *ngIf="isAdminOwner" class="admin-badge" routerLink="/profile" title="Tu perfil">
+    <img *ngIf="profile.avatar; else adminInitial" [src]="profile.avatar" alt="Avatar admin"/>
+    <ng-template #adminInitial>
+      <span class="initial">👤</span>
+    </ng-template>
+  </a>
+  <div class="card-top">
+    <span class="pill">Activo</span>
+    <a *ngIf="isAdminOwner" class="admin-link" [routerLink]="['/admin', raffle.id]" title="Administrar">⚙️ Admin</a>
+  </div>
+  <div class="card-head">
+    <h3>{{ raffle.name }}</h3>
+    <span class="organizer">Organizado por {{ raffle.organizer }} <span class="alias">(@{{ raffle.alias }})</span></span>
+  </div>
+  <p class="desc">{{ raffle.description }}</p>
+  <div class="meta">
+    <div class="meta-left">
+      <span class="meta-item">💲 {{ raffle.price | number:'1.0-0' }}</span>
+      <span class="meta-sep">•</span>
+      <span class="meta-item"># {{ totalNumbers }}</span>
+      <span class="meta-sep">•</span>
+      <span class="meta-item">Sorteo en {{ daysLeft }} días</span>
+    </div>
+    <ng-content select="button"></ng-content>
+  </div>
+</div>
