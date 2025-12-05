@@ -4,13 +4,18 @@
     <h3>Panel de Administración</h3>
   </header>
 
-  <section class="info">
-    <div class="sub">{{ r.name }} — Organizado por {{ r.organizer }} <span class="alias">(@{{ r.alias }})</span></div>
-    <div class="actions">
-      <a class="ghost" [routerLink]="['/admin', r.id, 'edit']">Editar sorteo</a>
-      <a class="ghost" [routerLink]="['/admin', r.id, 'resultado']">Publicar resultado</a>
-    </div>
-  </section>
+<section class="info">
+  <div class="sub">
+    {{ r.name }} — Organizado por {{ r.organizer }}
+    <span class="alias">(@{{ r.alias }})</span>
+  </div>
+
+  <div class="actions">
+    <a class="ghost" [routerLink]="['/admin', r.id, 'edit']">Editar sorteo</a>
+    <a class="ghost" [routerLink]="['/admin', r.id, 'resultado']">Publicar resultado</a>
+  </div>
+</section>
+
 
   <section class="countdown">
     <div class="count-card">

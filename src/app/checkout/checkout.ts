@@ -21,7 +21,13 @@ export class CheckoutComponent {
   email = '';
   phone = '';
 
-  constructor(private route: ActivatedRoute, private router: Router, private state: RaffleStateService, private profile: UserProfileService, private toast: ToastService) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private state: RaffleStateService,
+    private profile: UserProfileService,
+    private toast: ToastService
+  ) {
     const id = this.route.snapshot.paramMap.get('id')!;
     const num = Number(this.route.snapshot.paramMap.get('number'));
     this.number = num;
@@ -39,5 +45,4 @@ export class CheckoutComponent {
     });
   }
 
-  cancel() { if (this.raffle) this.router.navigate(['/raffle', this.raffle.id]); }
-}
+  cancel() { if (this.raffle) this.router.navigate(['/raffle', this.raffle.id]); }}

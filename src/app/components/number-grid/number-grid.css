@@ -5,6 +5,6 @@
 .num { min-width: 44px; min-height: 44px; }
 .num.available { background:#22c55e; color:#fff; transition: transform 300ms; }
 .num.available:hover { transform: translateY(-1px); }
-.num.sold { background:#111827; color:#9ca3af; }
+.num.sold { background:#120300; color:#ffffff; }
 .num.processing { background:#facc15; color:#1f2937; animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100%{ filter:brightness(1);} 50%{ filter:brightness(1.1);} }

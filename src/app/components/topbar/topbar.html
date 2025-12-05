@@ -9,12 +9,12 @@
     <a routerLink="/raffle" routerLinkActive="active">
       <span class="label">Sorteos</span>
     </a>
-    <a routerLink="/profile/purchases" routerLinkActive="active">
+    <!-- <a routerLink="/profile/purchases" routerLinkActive="active">
       <span class="label">Mis Compras</span>
     </a>
     <a routerLink="/terms" routerLinkActive="active">
       <span class="label">Términos</span>
-    </a>
+    </a>  -->
   </nav>
   <div class="actions">
     <a class="avatar-mini" routerLink="/profile" title="Perfil">
@@ -24,6 +24,6 @@
       </ng-template>
     </a>
     <a *ngIf="profile.role==='admin'" class="ghost" routerLink="/admin/new">Nuevo sorteo</a>
-    <button class="ghost" (click)="toggleDark()">Tema</button>
+    <!-- <button class="ghost" (click)="toggleDark()">Tema</button> -->
   </div>
 </header>

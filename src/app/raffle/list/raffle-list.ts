@@ -16,16 +16,29 @@ export class RaffleListComponent {
   query = signal('');
   raffles = signal<Raffle[]>([]);
 
-  constructor(private state: RaffleStateService, private router: Router) {
+  constructor(
+    private state: RaffleStateService,
+    private router: Router
+  ) {
+    // efecto de búsqueda
     effect(() => {
-      const q = this.query().toLowerCase();
+      const q = this.query().toLowerCase().trim();
       const base = this.state.getRaffles();
+
+      if (!q) {
+        this.raffles.set(base);
+        return;
+      }
+
       this.raffles.set(
         base.filter(r =>
-          r.name.toLowerCase().includes(q) || r.organizer.toLowerCase().includes(q)
+          r.name.toLowerCase().includes(q) ||
+          r.organizer.toLowerCase().includes(q)
         )
       );
     });
+
+    // estado inicial
     this.raffles.set(this.state.getRaffles());
   }
 

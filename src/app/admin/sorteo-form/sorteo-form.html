@@ -1,21 +1,70 @@
 <div class="page">
   <header class="topbar">
-    <button class="ghost" (click)="cancel()">← Volver</button>
-    <h3>{{ mode === 'new' ? 'Nuevo Sorteo' : 'Editar Sorteo' }}</h3>
+    <button type="button" class="ghost" (click)="cancel()">← Volver</button>
+    <h3 class="title">
+      {{ mode === 'new' ? 'Nuevo Sorteo' : 'Editar Sorteo' }}
+    </h3>
   </header>
 
   <section class="card">
-    <div class="grid">
-      <label>Nombre <input [(ngModel)]="name"></label>
-      <label>Organizador <input [(ngModel)]="organizer"></label>
-      <label>Alias <input [(ngModel)]="alias"></label>
-      <label>Descripción <input [(ngModel)]="description"></label>
-      <label>Fecha sorteo <input type="datetime-local" [(ngModel)]="raffleDate"></label>
-      <label>Precio por número <input type="number" [(ngModel)]="price"></label>
-      <label>Cantidad de números <input type="number" [(ngModel)]="count"></label>
+    <h4 class="card-title">Datos del sorteo</h4>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="name">Nombre</label>
+        <input id="name" [(ngModel)]="name" />
+      </div>
+
+      <div class="field">
+        <label for="organizer">Organizador</label>
+        <input id="organizer" [(ngModel)]="organizer" />
+      </div>
+
+      <div class="field">
+        <label for="alias">Alias</label>
+        <input id="alias" [(ngModel)]="alias" />
+      </div>
+
+      <div class="field">
+        <label for="description">Descripción</label>
+        <input id="description" [(ngModel)]="description" />
+      </div>
+
+      <div class="field">
+        <label for="raffleDate">Fecha sorteo</label>
+        <input
+          id="raffleDate"
+          type="datetime-local"
+          [(ngModel)]="raffleDate"
+        />
+      </div>
+
+      <div class="field">
+        <label for="price">Precio por número</label>
+        <input
+          id="price"
+          type="number"
+          min="1"
+          [(ngModel)]="price"
+        />
+        <small class="error" *ngIf="price <= 0">
+          El precio debe ser mayor a 0.
+        </small>
+      </div>
+
+      <div class="field full">
+        <label for="count">Cantidad de números</label>
+        <input
+          id="count"
+          type="number"
+          [value]="count"
+          readonly
+        />
+      </div>
     </div>
+
     <div class="actions">
-      <button class="primary" (click)="save()">Guardar</button>
+      <button class="primary" type="button" (click)="save()">Guardar</button>
     </div>
   </section>
 </div>
