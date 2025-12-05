@@ -14,6 +14,9 @@
       />
     </div>
   </header>
+  <div class="auth-cta" style="margin: 8px 0;">
+    <button class="ghost" *ngIf="!isLoggedIn()" (click)="login()">Iniciar sesión</button>
+  </div>
 
   <div class="count" *ngIf="raffles().length > 0">
     {{ raffles().length }} sorteos encontrados
@@ -21,7 +24,8 @@
 
   <div *ngIf="raffles().length === 0" class="empty">
     <h4>No encontramos sorteos activos</h4>
-    <p>Cuando haya sorteos disponibles se mostrarán aquí.</p>
+    <p *ngIf="!hasFetchError()">Cuando haya sorteos disponibles se mostrarán aquí.</p>
+    <p *ngIf="hasFetchError()">No se pudo obtener la lista de sorteos. Es posible que el servidor requiera autenticación. Puede <button class="ghost" (click)="login()">iniciar sesión</button> para verlos.</p>
   </div>
 
   <div class="grid" *ngIf="raffles().length > 0">

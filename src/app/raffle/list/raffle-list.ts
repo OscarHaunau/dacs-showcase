@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { RaffleStateService } from '../../core/services/raffle-state.service';
 import { Raffle } from '../../core/models/raffle';
 import { RaffleCardComponent } from '../../components/raffle-card/raffle-card';
+import { KeycloakService } from '../../core/services/keycloak.service';
 
 @Component({
   selector: 'app-raffle-list',
@@ -19,6 +20,7 @@ export class RaffleListComponent {
   constructor(
     private state: RaffleStateService,
     private router: Router
+    , private keycloak: KeycloakService
   ) {
     // efecto de búsqueda
     effect(() => {
@@ -44,5 +46,25 @@ export class RaffleListComponent {
 
   viewRaffle(id: string) {
     this.router.navigate(['/raffle', id]);
+  }
+
+  isLoggedIn(): boolean {
+    try {
+      return this.keycloak.isLoggedInSync();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  login() {
+    this.keycloak.login().catch(e => console.warn('Login error', e));
+  }
+
+  hasFetchError(): boolean {
+    try {
+      return this.state.fetchError();
+    } catch (e) {
+      return false;
+    }
   }
 }

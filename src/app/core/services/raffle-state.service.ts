@@ -2,6 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { Buyer, Raffle, RaffleNumber, RaffleNumberStatus } from '../models/raffle';
 import { SorteoService } from './sorteo.service';
 import { AdministradorService } from './administrador.service';
+import { AdministradorDto } from '../models/dto/administrador-dto';
 import { SorteoDto } from '../models/dto/sorteo-dto';
 import { NumeroDto } from '../models/dto/numero-dto';
 import { forkJoin, map, of, catchError } from 'rxjs';
@@ -11,6 +12,8 @@ export class RaffleStateService {
   // In-memory data (initially empty; will be loaded from backend)
   private rafflesSig = signal<Raffle[]>([]);
   private currentIdSig = signal<string | null>(null);
+  private fetchErrorSig = signal<boolean>(false);
+  fetchError = computed(() => this.fetchErrorSig());
 
   raffles = computed(() => this.rafflesSig());
   currentRaffle = computed(() => {
@@ -91,16 +94,23 @@ export class RaffleStateService {
    * Loads raffles from backend and maps into internal Raffle model
    */
   refreshRaffles() {
-    this.sorteoService.getAllActive().pipe(catchError(() => of([] as SorteoDto[]))).subscribe(sorteos => {
+    this.sorteoService.getAllActive().pipe(catchError((err) => {
+      this.fetchErrorSig.set(true);
+      return of([] as SorteoDto[]);
+    })).subscribe(sorteos => {
+      this.fetchErrorSig.set(false);
       if (!sorteos || sorteos.length === 0) {
         this.rafflesSig.set([]);
         return;
       }
 
       // Get numbers grouped by sorteoId instead of by administrador
-      const numbersObs = sorteos.filter(s => s.id !== undefined).length ? sorteos.filter(s => s.id !== undefined).map(s => this.sorteoService.getNumerosBySorteoId(s.id!).pipe(map(nums => ({ sorteoId: s.id, nums })))) : [];
+        const numbersObs = sorteos.filter(s => s.id !== undefined).length ? sorteos.filter(s => s.id !== undefined).map(s => this.sorteoService.getNumerosBySorteoId(s.id!).pipe(
+          map(nums => ({ sorteoId: s.id, nums })),
+          catchError(() => of({ sorteoId: s.id, nums: [] as NumeroDto[] }))
+        )) : [];
       const numbers$ = numbersObs.length ? forkJoin(numbersObs) : of([]);
-      const admins$ = this.adminService.getAll();
+        const admins$ = this.adminService.getAll().pipe(catchError(() => of([] as AdministradorDto[])));
 
       forkJoin({ admins: admins$, numerosBySorteo: numbers$ }).subscribe(({ admins, numerosBySorteo }) => {
         // numerosBySorteo is an array of { sorteoId, nums }
