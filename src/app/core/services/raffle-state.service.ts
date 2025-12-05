@@ -1,10 +1,15 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Buyer, Raffle, RaffleNumber, RaffleNumberStatus } from '../models/raffle';
+import { SorteoService } from './sorteo.service';
+import { AdministradorService } from './administrador.service';
+import { SorteoDto } from '../models/dto/sorteo-dto';
+import { NumeroDto } from '../models/dto/numero-dto';
+import { forkJoin, map, of, catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class RaffleStateService {
-  // In-memory data
-  private rafflesSig = signal<Raffle[]>(this.generateMockRaffles());
+  // In-memory data (initially empty; will be loaded from backend)
+  private rafflesSig = signal<Raffle[]>([]);
   private currentIdSig = signal<string | null>(null);
 
   raffles = computed(() => this.rafflesSig());
@@ -12,6 +17,10 @@ export class RaffleStateService {
     const id = this.currentIdSig();
     return this.rafflesSig().find(r => r.id === id) ?? null;
   });
+
+  constructor(private sorteoService: SorteoService, private adminService: AdministradorService) {
+    this.refreshRaffles();
+  }
 
   setCurrentRaffle(id: string) {
     this.currentIdSig.set(id);
@@ -76,6 +85,45 @@ export class RaffleStateService {
       }
       onResult(success);
     }, 1200);
+  }
+
+  /**
+   * Loads raffles from backend and maps into internal Raffle model
+   */
+  refreshRaffles() {
+    this.sorteoService.getAllActive().pipe(catchError(() => of([] as SorteoDto[]))).subscribe(sorteos => {
+      if (!sorteos || sorteos.length === 0) {
+        this.rafflesSig.set([]);
+        return;
+      }
+
+      // Get numbers grouped by sorteoId instead of by administrador
+      const numbersObs = sorteos.filter(s => s.id !== undefined).length ? sorteos.filter(s => s.id !== undefined).map(s => this.sorteoService.getNumerosBySorteoId(s.id!).pipe(map(nums => ({ sorteoId: s.id, nums })))) : [];
+      const numbers$ = numbersObs.length ? forkJoin(numbersObs) : of([]);
+      const admins$ = this.adminService.getAll();
+
+      forkJoin({ admins: admins$, numerosBySorteo: numbers$ }).subscribe(({ admins, numerosBySorteo }) => {
+        // numerosBySorteo is an array of { sorteoId, nums }
+        const allNums: NumeroDto[] = ([] as NumeroDto[]).concat(...(numerosBySorteo as any).map((n: any) => n.nums ?? []));
+
+        const raffles: Raffle[] = sorteos.map(s => {
+          const id = s.id !== undefined ? `S-${s.id}` : `S-${Date.now()}`;
+          const name = s.nombre;
+          const organizer = s.administradorId ? (admins.find(a => a.id === s.administradorId)?.nombre ?? '') : '';
+          const alias = name?.toLowerCase().replace(/\s+/g, '-') ?? id;
+          const description = s.descripcion ?? '';
+          const raffleDate = s.fechaSorteo ?? new Date().toISOString();
+          const price = s.precioNumero ?? 0;
+          const numbers = (allNums.filter(n => n.sorteoId === s.id) as NumeroDto[])
+            .sort((a, b) => a.valor - b.valor)
+            .map< RaffleNumber >(n => ({ number: n.valor, status: n.estado === 'VENDIDO' ? 'sold' : n.estado === 'EN_PROCESO' ? 'processing' : 'available', buyerId: n.compraId ? String(n.compraId) : undefined }));
+          const buyers: Buyer[] = numbers.filter(n => n.status === 'sold' && n.buyerId).map(n => ({ id: `C-${n.buyerId}`, name: 'Comprador', email: '', phone: '', numberBought: n.number }));
+          return { id, name, organizer, alias, description, raffleDate, price, numbers, buyers } as Raffle;
+        });
+
+        this.rafflesSig.set(raffles);
+      });
+    });
   }
 
   // Stats helpers

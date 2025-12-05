@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RaffleStateService } from '../../core/services/raffle-state.service';
+import { SorteoService } from '../../core/services/sorteo.service';
+import { SorteoDto } from '../../core/models/dto/sorteo-dto';
 import { Raffle } from '../../core/models/raffle';
 
 @Component({
@@ -27,7 +29,8 @@ export class SorteoFormComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private state: RaffleStateService
+    private state: RaffleStateService,
+    private sorteoService: SorteoService
   ) {
     this.id = this.route.snapshot.paramMap.get('id');
 
@@ -54,48 +57,36 @@ export class SorteoFormComponent {
 
     if (this.mode === 'new') {
       const now = new Date();
-      const id = `raffle-${this.alias || crypto.randomUUID()}`;
-      const qty = 100; // fija
-
-      const numbers = Array.from({ length: qty }, (_, i) => ({
-        number: i + 1,
-        status: 'available' as const
-      }));
-
-      const raffle: Raffle = {
-        id,
-        name: this.name,
-        organizer: this.organizer,
-        alias: this.alias || id,
-        description: this.description,
-        raffleDate:
-          this.raffleDate ||
-          new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        price: Number(this.price),
-        numbers,
-        buyers: []
+      const dto: SorteoDto = {
+        nombre: this.name,
+        descripcion: this.description,
+        fechaSorteo: this.raffleDate || new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        precioNumero: Number(this.price),
+        estado: true,
       };
-
-      this.state.addRaffle(raffle);
-      this.router.navigate(['/admin', raffle.id]);
+      // Save to backend
+      this.sorteoService.saveSorteo(dto).subscribe(s => {
+        // refresh local list and navigate to saved sorteo
+        this.state.refreshRaffles();
+        const newId = s.id !== undefined ? `S-${s.id}` : `S-${Date.now()}`;
+        this.router.navigate(['/admin', newId]);
+      });
     } else {
       const r = this.state.getRaffleById(this.id!);
       if (!r) return;
 
-      const updated: Raffle = {
-        ...r,
-        name: this.name,
-        organizer: this.organizer,
-        alias: this.alias,
-        description: this.description,
-        raffleDate: this.raffleDate,
-        price: Number(this.price),
-        // cantidad de números no cambia
-        numbers: r.numbers
+      const dto: SorteoDto = {
+        id: Number(r.id.toString().replace(/^S-/, '')) || undefined,
+        nombre: this.name,
+        descripcion: this.description,
+        fechaSorteo: this.raffleDate,
+        precioNumero: Number(this.price),
+        estado: true,
       };
-
-      this.state.updateRaffle(updated);
-      this.router.navigate(['/admin', r.id]);
+      this.sorteoService.saveSorteo(dto).subscribe(() => {
+        this.state.refreshRaffles();
+        this.router.navigate(['/admin', r.id]);
+      });
     }
   }
 

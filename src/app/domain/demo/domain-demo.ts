@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SorteoDomainService } from '../../core/services/sorteo-domain.service';
+import { SorteoService } from '../../core/services/sorteo.service';
+import { RaffleStateService } from '../../core/services/raffle-state.service';
 import { MetodoPago } from '../../core/models/domain/enums';
 
 @Component({
@@ -37,15 +39,18 @@ export class DomainDemoComponent {
 
   MetodoPago = MetodoPago;
 
-  constructor(public dom: SorteoDomainService) {}
+  constructor(public dom: SorteoDomainService, private sorteoService: SorteoService, private state: RaffleStateService) {}
 
   crearSorteo() {
-    this.dom.crearSorteo({
-      nombrePremio: this.nombrePremio,
-      descripcionPremio: this.descripcionPremio,
-      valorPremio: this.valorPremio,
+    // Save to backend using SorteoService
+    const dto = {
+      nombre: this.nombrePremio,
       descripcion: this.descripcionSorteo,
       precioNumero: Number(this.precioNumero),
+    } as any;
+    this.sorteoService.saveSorteo(dto).subscribe(() => {
+      // Refresh state so list shows new sorteo
+      this.state.refreshRaffles();
     });
   }
 
