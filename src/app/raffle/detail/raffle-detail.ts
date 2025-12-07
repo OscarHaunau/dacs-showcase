@@ -8,6 +8,8 @@ import { NumberGridComponent } from '../../components/number-grid/number-grid';
 import { PurchaseModalComponent } from '../../components/purchase-modal/purchase-modal';
 import { ToastService } from '../../core/services/toast.service';
 import { UserProfileService } from '../../core/services/user-profile.service';
+import { Buyer } from '../../core/models/raffle';
+import { MercadoPagoService } from '../../core/services/mercado-pago.service';
 
 @Component({
   selector: 'app-raffle-detail',
