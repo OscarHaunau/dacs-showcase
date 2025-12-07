@@ -1,10 +1,10 @@
 <div class="page">
   <header class="topbar">
     <button class="ghost" (click)="back()">← Volver a sorteos</button>
-    <button class="ghost" *ngIf="raffle() && profileSvc.profile().role==='admin'" (click)="goAdmin()">Admin</button>
+    <button class="ghost" *ngIf="raffle && profileSvc.profile().role==='admin'" (click)="goAdmin()">Admin</button>
   </header>
 
-  <section *ngIf="raffle() as r" class="info">
+  <section *ngIf="raffle as r" class="info">
     <h2 class="title">{{ r.name }}</h2>
     <div class="sub">Organizado por {{ r.organizer }} <span class="alias">(@{{ r.alias }})</span></div>
     <p class="desc">{{ r.description }}</p>
@@ -13,18 +13,18 @@
   <section class="countdown">
     <div class="count-card">
       <div class="label">Tiempo restante para el sorteo</div>
-      <app-countdown [targetIso]="raffle()!.raffleDate"></app-countdown>
-      <div class="when">Programado para: {{ raffle()!.raffleDate | date:'long' }}</div>
+      <app-countdown [targetIso]="raffle?.raffleDate ?? ''"></app-countdown>
+      <div class="when">Programado para: {{ raffle?.raffleDate | date:'long' }}</div>
     </div>
   </section>
 
-  <section *ngIf="raffle() as r" class="numbers">
+  <section *ngIf="raffle as r" class="numbers">
     <app-number-grid [numbers]="r.numbers" (select)="pickNumber($event)"></app-number-grid>
   </section>
 
-  <app-purchase-modal [visible]="showModal()" [number]="selectedNumber()" (cancel)="cancelModal()" (submit)="submitPurchase($event)"></app-purchase-modal>
-  
-  <div class="confetti" *ngIf="showConfetti()">
+  <app-purchase-modal [visible]="showModal" [number]="selectedNumber" (cancel)="cancelModal()" (submit)="submitPurchase($event)"></app-purchase-modal>
+
+  <div class="confetti" *ngIf="showConfetti">
     <span>🎉</span><span>✨</span><span>🟢</span><span>⭐</span><span>💫</span>
   </div>
 </div>

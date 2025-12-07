@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Buyer } from '../../core/models/raffle';
 
@@ -11,10 +11,10 @@ import { Buyer } from '../../core/models/raffle';
 })
 export class BuyersTableComponent {
   @Input() buyers: Buyer[] = [];
-  hidePhone = signal(false);
-  query = signal('');
+  hidePhone = false;
+  query = '';
   get filtered() {
-    const q = this.query().toLowerCase();
+    const q = this.query.toLowerCase();
     return this.buyers.filter(b =>
       b.name.toLowerCase().includes(q) || b.email.toLowerCase().includes(q) || b.phone.toLowerCase().includes(q)
     );
