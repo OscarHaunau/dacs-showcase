@@ -22,7 +22,7 @@
     <app-number-grid [numbers]="r.numbers" (select)="pickNumber($event)"></app-number-grid>
   </section>
 
-  <app-purchase-modal [visible]="showModal" [number]="selectedNumber" [loading]="paying" (cancel)="cancelModal()" (submit)="submitPurchase($event)"></app-purchase-modal>
+  <app-purchase-modal [visible]="showModal" [number]="selectedNumber" (cancel)="cancelModal()" (submit)="submitPurchase($event)"></app-purchase-modal>
 
   <div class="confetti" *ngIf="showConfetti">
     <span>🎉</span><span>✨</span><span>🟢</span><span>⭐</span><span>💫</span>

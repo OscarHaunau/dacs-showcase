@@ -23,9 +23,8 @@ export class RaffleDetailComponent {
   selectedNumber: number | null = null;
   showModal = false;
   showConfetti = false;
-  paying = false;
 
-  constructor(private state: RaffleStateService, private route: ActivatedRoute, private router: Router, private toast: ToastService, public profileSvc: UserProfileService, private gateway: MercadoPagoService) {
+  constructor(private state: RaffleStateService, private route: ActivatedRoute, private router: Router, private toast: ToastService, public profileSvc: UserProfileService) {
     this.loadRaffle();
   }
 
@@ -44,37 +43,25 @@ export class RaffleDetailComponent {
   goAdmin() { if (this.raffle) this.router.navigate(['/admin', this.raffle.id]); }
   pickNumber(n: number) { this.selectedNumber = n; this.showModal = true; }
   cancelModal() { this.showModal = false; }
-  async submitPurchase(data: { name: string; email: string; phone: string }) {
-    if (!this.raffle || this.selectedNumber === null || this.paying) return;
+  submitPurchase(data: { name: string; email: string; phone: string }) {
+    if (!this.raffle || this.selectedNumber === null) return;
 
     const raffleId = this.raffle.id;
     const number = this.selectedNumber;
-    const buyer: Buyer = { id: crypto.randomUUID(), ...data, numberBought: number };
 
-    this.paying = true;
-    this.state.updateNumberStatus(raffleId, number, 'processing');
-
-    const result = await this.gateway.pay(this.raffle.price, `${this.raffle.name} número ${number}`);
-
-    this.showModal = false;
-    this.paying = false;
-
-    if (result.success) {
-      this.state.updateNumberStatus(raffleId, number, 'sold', buyer);
-      this.handleSuccess(result.message);
-    } else {
-      this.state.updateNumberStatus(raffleId, number, 'available');
-      this.handleFailure(result.message);
-    }
+    this.state.simulatePurchase(raffleId, number, data, (success) => {
+      this.showModal = false;
+      success ? this.handleSuccess() : this.handleFailure();
+    });
   }
 
-  private handleSuccess(message?: string) {
-    this.toast.show(message ?? 'Compra confirmada. ¡Número vendido!', 'success');
+  private handleSuccess() {
+    this.toast.show('Compra confirmada. ¡Número vendido!', 'success');
     this.showConfetti = true;
     setTimeout(() => this.showConfetti = false, 2500);
   }
 
-  private handleFailure(message?: string) {
-    this.toast.show(message ?? 'Pago fallido, intenta nuevamente.', 'error');
+  private handleFailure() {
+    this.toast.show('Pago fallido, intenta nuevamente.', 'error');
   }
 }

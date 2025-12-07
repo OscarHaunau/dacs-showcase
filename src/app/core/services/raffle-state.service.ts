@@ -55,6 +55,22 @@ export class RaffleStateService {
     this.updateRaffle(updated);
   }
 
+  simulatePurchase(raffleId: string, number: number, buyerData: Omit<Buyer, 'id'|'numberBought'>, onResult: (success: boolean) => void) {
+    if (!this.getRaffleById(raffleId)) return;
+
+    const id = crypto.randomUUID();
+    const buyer: Buyer = { id, ...buyerData, numberBought: number };
+    this.updateNumberStatus(raffleId, number, 'processing');
+
+    setTimeout(() => {
+      const success = Math.random() < 0.7;
+      const status = success ? 'sold' : 'available';
+
+      this.updateNumberStatus(raffleId, number, status, buyer);
+      onResult(success);
+    }, 1200);
+  }
+
   getStats(raffle: Raffle) {
     let sold = 0;
     let processing = 0;

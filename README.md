@@ -29,7 +29,7 @@ Esta app de ejemplo muestra un flujo completo de sorteos online pensado para pri
 ## Resumen de la experiencia de usuario
 - **Lista de sorteos**: el usuario ve todas las opciones y puede filtrar por nombre u organizador.
 - **Detalle**: muestra la descripción, un contador regresivo hasta la fecha del sorteo, la grilla de números y el modal de compra.
-- **Pago con Mercado Pago**: al elegir un número se abre el modal, se completan los datos y se envía un pago de prueba a Mercado Pago con las credenciales de sandbox. El número pasa por los estados `available → processing → sold`.
+- **Compra simulada**: el número pasa por estados de `available → processing → sold` con un mensaje de éxito o error.
 - **Admin**: permite ver métricas básicas (vendidos, en proceso, disponibles, recaudación), editar datos y descargar compradores en CSV.
 
 ## Componentes clave explicados
@@ -41,7 +41,7 @@ Esta app de ejemplo muestra un flujo completo de sorteos online pensado para pri
 - `RaffleDetailComponent` (`src/app/raffle/detail/raffle-detail.ts`):
   - `loadRaffle` busca el sorteo por ID desde la ruta y lo guarda en memoria.
   - `pickNumber` abre el modal con el número seleccionado.
-  - `submitPurchase` marca el número como "processing", llama al gateway de Mercado Pago y decide si confirma o libera el número.
+  - `submitPurchase` delega la compra al servicio y separa `handleSuccess` / `handleFailure` para mensajes claros.
 
 - `CountdownComponent` (`src/app/components/countdown/countdown.ts`):
   - Recibe una fecha ISO y actualiza un reloj `{days, hours, minutes, seconds}` cada segundo.
@@ -52,7 +52,6 @@ Esta app de ejemplo muestra un flujo completo de sorteos online pensado para pri
 
 - `PurchaseModalComponent` (`src/app/components/purchase-modal/purchase-modal.ts`):
   - Muestra un formulario mínimo con `name`, `email` y `phone` y notifica con `submit` o `cancel`.
-  - Usa `loading` para deshabilitar el botón y mostrar "Procesando pago..." mientras se habla con Mercado Pago.
 
 - `AdminComponent` (`src/app/admin/admin.ts`):
   - Usa el estado actual para mostrar métricas y descargar el CSV de compradores con `downloadBuyersCsv`.
@@ -61,11 +60,8 @@ Esta app de ejemplo muestra un flujo completo de sorteos online pensado para pri
 - `RaffleStateService` (`src/app/core/services/raffle-state.service.ts`):
   - Mantiene la lista de sorteos y el sorteo actual.
   - `createNumbers`, `updateNumberStatus` y `refreshBuyers` mantienen sincronizados números y compradores.
+  - `simulatePurchase` marca el número como "processing", espera 1.2 segundos y confirma o rechaza la venta.
   - `getStats` calcula vendidos, en proceso, disponibles y recaudación.
-
-- `MercadoPagoService` (`src/app/core/services/mercado-pago.service.ts`):
-  - Envía una solicitud `POST` al endpoint de OAuth de Mercado Pago con credenciales de prueba.
-  - Si hay red, valida que exista un `access_token`. Si no hay red, simula un éxito local para seguir el flujo en demos.
 
 - `ToastService` (`src/app/core/services/toast.service.ts`) y `TermsConsentService` (`src/app/core/services/terms-consent.service.ts`):
   - Guardan avisos y el consentimiento de términos de manera simple.
