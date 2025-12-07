@@ -16,7 +16,9 @@
       </div>
       <div class="actions">
         <button type="button" class="ghost" (click)="cancel.emit()">Cancelar</button>
-        <button type="button" class="primary" [disabled]="!f.valid" (click)="submit.emit({name: f.value.name, email: f.value.email, phone: f.value.phone})">Comprar</button>
+        <button type="button" class="primary" [disabled]="!f.valid || loading" (click)="submit.emit({name: f.value.name, email: f.value.email, phone: f.value.phone})">
+          {{ loading ? 'Procesando pago...' : 'Comprar' }}
+        </button>
       </div>
     </form>
   </div>

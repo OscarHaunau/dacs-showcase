@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 export class PurchaseModalComponent {
   @Input() visible = false;
   @Input() number: number | null = null;
+  @Input() loading = false;
   @Output() cancel = new EventEmitter<void>();
   @Output() submit = new EventEmitter<{ name: string; email: string; phone: string }>();
 }

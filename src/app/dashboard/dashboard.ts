@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <--- ¡Importa esto!
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../core/services/api-service';
 import { ITestResponse } from '../core/models/iresponse';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.css'],
-    imports: [CommonModule] // <--- ¡Añade esto al array!
+  styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit {
 
@@ -17,7 +18,6 @@ export class DashboardComponent implements OnInit {
   constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
-    // Llamamos a los servicios cuando el componente se inicializa
     this.getPingResult();
     this.getTestResult();
   }

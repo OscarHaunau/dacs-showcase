@@ -1,4 +1,4 @@
-<div class="page" *ngIf="state.currentRaffle() as r">
+<div class="page" *ngIf="state.getCurrentRaffle() as r">
   <header class="topbar">
     <button class="ghost" (click)="back()">← Volver a sorteos</button>
     <h3>Panel de Administración</h3>
@@ -29,7 +29,7 @@
 
   <section class="table">
     <div class="toolbar">
-      <button class="ghost" (click)="exportCSV()">Exportar CSV</button>
+      <button class="ghost" (click)="downloadBuyersCsv()">Exportar CSV</button>
     </div>
     <app-buyers-table [buyers]="r.buyers"></app-buyers-table>
   </section>

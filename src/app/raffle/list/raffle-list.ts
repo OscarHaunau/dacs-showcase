@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RaffleStateService } from '../../core/services/raffle-state.service';
@@ -13,36 +13,28 @@ import { RaffleCardComponent } from '../../components/raffle-card/raffle-card';
   styleUrls: ['./raffle-list.css']
 })
 export class RaffleListComponent {
-  query = signal('');
-  raffles = signal<Raffle[]>([]);
+  query = '';
+  raffles: Raffle[] = [];
+  private allRaffles: Raffle[] = [];
 
-  constructor(
-    private state: RaffleStateService,
-    private router: Router
-  ) {
-    // efecto de búsqueda
-    effect(() => {
-      const q = this.query().toLowerCase().trim();
-      const base = this.state.getRaffles();
+  constructor(private state: RaffleStateService, private router: Router) {
+    this.allRaffles = this.state.getRaffles();
+    this.raffles = this.allRaffles;
+  }
 
-      if (!q) {
-        this.raffles.set(base);
-        return;
-      }
-
-      this.raffles.set(
-        base.filter(r =>
-          r.name.toLowerCase().includes(q) ||
-          r.organizer.toLowerCase().includes(q)
-        )
-      );
-    });
-
-    // estado inicial
-    this.raffles.set(this.state.getRaffles());
+  onSearch(value: string) {
+    this.query = value.toLowerCase().trim();
+    this.raffles = this.query ? this.filterRaffles() : this.allRaffles;
   }
 
   viewRaffle(id: string) {
     this.router.navigate(['/raffle', id]);
+  }
+
+  private filterRaffles() {
+    return this.allRaffles.filter(r =>
+      r.name.toLowerCase().includes(this.query) ||
+      r.organizer.toLowerCase().includes(this.query)
+    );
   }
 }

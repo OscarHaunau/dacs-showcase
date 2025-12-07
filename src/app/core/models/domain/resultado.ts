@@ -10,7 +10,6 @@ export class Resultado {
   ) {}
 
   notificarParticipantesCorreos(): void {
-    // En frontend, esto sería una integración a un servicio; aquí dejamos stub
     console.log('Notificando participantes por correo del resultado', {
       ganador: this.numeroGanador,
       respaldo: this.numeroRespaldo,
