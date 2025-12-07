@@ -27,13 +27,11 @@ export class Compra {
   }
 
   generarComprobante(): string {
-    // Stub: en frontend generaríamos un PDF o similar; aquí retornamos texto
     return `COMP-${this.id}-${this.numero.valor}-${this.participante.dni}`;
   }
 
   cancelarCompra(idCompra: string): void {
     if (idCompra !== this.id) return;
-    // Cancelación: se revierte el estado del número
     this.numero.cambiarEstadoNumero(EstadoNumero.DISPONIBLE);
   }
 
@@ -43,7 +41,6 @@ export class Compra {
   }
 
   confirmarPagoTransaccion(): void {
-    // Confirmación final (ya aprobada en transacción)
     this.numero.cambiarEstadoNumero(EstadoNumero.VENDIDO);
   }
 }

@@ -1,10 +1,10 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 const STORAGE_KEY = 'rifa_terms_accepted';
 
 @Injectable({ providedIn: 'root' })
 export class TermsConsentService {
-  private acceptedSig = signal<boolean>(this.readAccepted());
+  private acceptedValue = this.readAccepted();
 
   private readAccepted(): boolean {
     try {
@@ -12,14 +12,14 @@ export class TermsConsentService {
     } catch { return false; }
   }
 
-  accepted() { return this.acceptedSig(); }
+  accepted() { return this.acceptedValue; }
 
   accept() {
     try { localStorage.setItem(STORAGE_KEY, 'true'); } catch {}
-    this.acceptedSig.set(true);
+    this.acceptedValue = true;
   }
   reset() {
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
-    this.acceptedSig.set(false);
+    this.acceptedValue = false;
   }
 }

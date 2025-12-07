@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Sorteo } from '../models/domain/sorteo';
 import { Premio } from '../models/domain/premio';
 import { Numero } from '../models/domain/numero';
@@ -9,43 +9,44 @@ import { MetodoPago, EstadoNumero } from '../models/domain/enums';
 
 @Injectable({ providedIn: 'root' })
 export class SorteoDomainService {
-  private sorteosSig = signal<Sorteo[]>([]);
-  private participantesSig = signal<Participante[]>([]);
-  private comprasSig = signal<Compra[]>([]);
-  private currentId = signal<string | null>(null);
+  sorteos: Sorteo[] = [];
+  participantes: Participante[] = [];
+  compras: Compra[] = [];
+  private currentId: string | null = null;
 
-  sorteos = computed(() => this.sorteosSig());
-  participantes = computed(() => this.participantesSig());
-  compras = computed(() => this.comprasSig());
-  actual(): Sorteo | undefined { return this.sorteosSig().find(s => s.id === this.currentId()); }
+  actual(): Sorteo | undefined {
+    return this.sorteos.find(s => s.id === this.currentId);
+  }
 
   crearSorteo(datos: { nombrePremio: string; descripcionPremio: string; valorPremio: number; descripcion: string; precioNumero: number; }): Sorteo {
     const premio = new Premio(`P-${Date.now()}`, datos.nombrePremio, datos.descripcionPremio, datos.valorPremio);
     const sorteo = new Sorteo(`S-${Date.now()}`, datos.nombrePremio, datos.descripcion, datos.precioNumero, new Date(), true, premio);
-    this.sorteosSig.set([...this.sorteosSig(), sorteo]);
-    this.currentId.set(sorteo.id);
+    this.sorteos = [...this.sorteos, sorteo];
+    this.currentId = sorteo.id;
     return sorteo;
   }
 
-  seleccionar(id: string) { this.currentId.set(id); }
+  seleccionar(id: string) {
+    this.currentId = id;
+  }
 
   generarNumeros(inicial: number, cantidad: number) {
     const s = this.actual();
     if (!s) return;
     s.generarNumeros(inicial, cantidad);
-    this.sorteosSig.set([...this.sorteosSig()]);
+    this.sorteos = [...this.sorteos];
   }
 
   registrarParticipante(nombre: string, dni: string, email: string, telefono: string): Participante {
     const p = new Participante(`U-${Date.now()}`, nombre, dni, email, telefono);
-    this.participantesSig.set([...this.participantesSig(), p]);
+    this.participantes = [...this.participantes, p];
     return p;
   }
 
   registrarCompra(participanteId: string, numeroValor: number, metodo: MetodoPago): { ok: boolean; mensaje: string; comprobante?: string } {
     const s = this.actual();
     if (!s) return { ok: false, mensaje: 'No hay sorteo seleccionado.' };
-    const participante = this.participantesSig().find(u => u.id === participanteId);
+    const participante = this.participantes.find(u => u.id === participanteId);
     if (!participante) return { ok: false, mensaje: 'Participante no encontrado.' };
     const numero = s.numeros.find(n => n.valor === numeroValor);
     if (!numero) return { ok: false, mensaje: 'Número inexistente.' };
@@ -57,8 +58,8 @@ export class SorteoDomainService {
     compra.procesarPago(trans, s.precioNumero);
     compra.confirmarPagoTransaccion();
     const comprobante = compra.generarComprobante();
-    this.comprasSig.set([...this.comprasSig(), compra]);
-    this.sorteosSig.set([...this.sorteosSig()]);
+    this.compras = [...this.compras, compra];
+    this.sorteos = [...this.sorteos];
     return { ok: true, mensaje: 'Compra registrada', comprobante };
   }
 

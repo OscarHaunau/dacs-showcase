@@ -12,9 +12,6 @@ export class Administrador {
   crearSorteo(premio: Premio, descripcion: string, precioNumero: number, modalidad: string, fechaSorteo: Date): Sorteo {
     const id = `S-${Date.now()}`;
     const sorteo = new Sorteo(id, premio.nombre, descripcion, precioNumero, new Date(), true, premio);
-    // modalidad se deja en comentario porque no está en Sorteo; podría ampliarse en el futuro
-    // sorteo.modalidad = modalidad;
-    // fechaSorteo podría mapearse a resultado/fecha; aquí lo dejamos como dato de planificación
     return sorteo;
   }
 
@@ -23,7 +20,6 @@ export class Administrador {
   }
 
   eliminarSorteo(_sorteo: Sorteo): void {
-    // En frontend, la eliminación real se haría vía servicio; aquí usamos stub
     console.log('Eliminar sorteo', _sorteo.id);
   }
 
@@ -36,7 +32,6 @@ export class Administrador {
   }
 
   exportarEstadisticas(idSorteo: string, filtros?: Record<string, unknown>): string {
-    // Retornamos un CSV mínimo como stub
     const header = 'idSorteo,fecha,aplicadoFiltro';
     const row = `${idSorteo},${new Date().toISOString()},${Boolean(filtros)}`;
     return [header, row].join('\n');
