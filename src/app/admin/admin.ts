@@ -18,16 +18,34 @@ export class AdminComponent {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.state.setCurrentRaffle(id);
   }
-  back() { this.router.navigate(['/raffle']); }
-  exportCSV() {
-    const r = this.state.currentRaffle();
-    if (!r) return;
-    const rows = r.buyers.map(b => `${b.name},${b.email},${b.phone},${b.numberBought}`);
-    const csv = ['Nombre,Email,Telefono,Numero', ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+  back() {
+    this.router.navigate(['/raffle']);
+  }
+
+  downloadBuyersCsv() {
+    const raffle = this.state.getCurrentRaffle();
+    if (!raffle) return;
+
+    const csv = this.createCsvContent(raffle.buyers);
+    const fileName = `${raffle.alias}-compradores.csv`;
+
+    this.downloadTextFile(csv, fileName);
+  }
+
+  private createCsvContent(buyers: { name: string; email: string; phone: string; numberBought: number }[]) {
+    const header = 'Nombre,Email,Telefono,Numero';
+    const rows = buyers.map(b => `${b.name},${b.email},${b.phone},${b.numberBought}`);
+    return [header, ...rows].join('\n');
+  }
+
+  private downloadTextFile(content: string, name: string) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${r.alias}-compradores.csv`; a.click();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
     URL.revokeObjectURL(url);
   }
 }

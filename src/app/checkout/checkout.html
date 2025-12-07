@@ -15,7 +15,9 @@
       <label>Teléfono <input [(ngModel)]="phone"></label>
     </div>
     <div class="actions">
-      <button class="primary" (click)="submit()">Confirmar compra</button>
+      <button class="primary" [disabled]="paying" (click)="submit()">
+        {{ paying ? 'Procesando pago...' : 'Confirmar compra' }}
+      </button>
     </div>
   </section>
 </div>

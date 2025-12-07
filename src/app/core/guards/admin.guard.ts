@@ -13,7 +13,7 @@ export const adminGuard: CanActivateFn = (route) => {
     return false;
   }
   const id = route.paramMap.get('id');
-  if (!id) return true; // allow routes like /admin/new
+  if (!id) return true;
   const r = state.getRaffleById(id);
   if (!r) {
     router.navigate(['/raffle']);

@@ -20,8 +20,8 @@ export interface Raffle {
   organizer: string;
   alias: string;
   description: string;
-  raffleDate: string; // ISO string
-  price: number; // price per number
+  raffleDate: string;
+  price: number;
   numbers: RaffleNumber[];
   buyers: Buyer[];
 }
