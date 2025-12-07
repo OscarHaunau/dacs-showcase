@@ -17,13 +17,19 @@
     </a>  -->
   </nav>
   <div class="actions">
-    <a class="avatar-mini" routerLink="/profile" title="Perfil">
-      <img *ngIf="profile.avatar; else noMini" [src]="profile.avatar" alt="Avatar mini" />
-      <ng-template #noMini>
-        <span class="placeholder">👤</span>
-      </ng-template>
-    </a>
-    <a *ngIf="profile.role==='admin'" class="ghost" routerLink="/admin/new">Nuevo sorteo</a>
-    <!-- <button class="ghost" (click)="toggleDark()">Tema</button> -->
+    <!-- Mostrar acciones para usuarios logueados -->
+	 @if (keycloakSvc.isLoggedIn()) {
+		<a class="avatar-mini" routerLink="/profile" title="Perfil">
+			<span class="placeholder">👤</span>
+			@if (profile.role==='admin') {
+				<a class="ghost" routerLink="/admin/new">Nuevo sorteo</a>
+			}
+		</a>
+	 }
+	 @else {
+		<button class="ghost" (click)="keycloakSvc.login()">Iniciar sesión</button>
+      	<button class="ghost" (click)="keycloakSvc.register()">Registrarse</button>
+	 }
+
   </div>
 </header>

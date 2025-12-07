@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { KeycloakService as KeycloakAngularService } from 'keycloak-angular';
-import { keycloakInitOptions } from '../config/keycloak.config';
 import { KeycloakProfile } from 'keycloak-js';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { signal } from '@angular/core';
+import { keycloakInitOptions } from '../config/keycloak.config';
 
 /**
  * Servicio personalizado para manejar Keycloak
@@ -13,39 +12,20 @@ import { signal } from '@angular/core';
 })
 export class KeycloakService {
   private userProfileSubject = new BehaviorSubject<KeycloakProfile | null>(null);
-  private loggedInSig = signal<boolean>(false);
-  public isLoggedIn$ = this.loggedInSig;
-  private initDone = false;
   public userProfile$ = this.userProfileSubject.asObservable();
+  private initialized = false;
 
-  constructor(private keycloak: KeycloakAngularService) {
-    this.initializeUserProfile();
-    this.updateLoginStatus();
-  }
-
-  /**
-   * Actualiza el estado de login sincronizando la señal `loggedInSig`.
-   * Acepta tanto el caso en que `keycloak.isLoggedIn()` devuelve boolean como Promise<boolean>.
-   */
-  private updateLoginStatus() {
-    Promise.resolve(this.keycloak.isLoggedIn())
-      .then(logged => this.loggedInSig.set(Boolean(logged)))
-      .catch(() => this.loggedInSig.set(false));
-  }
+  constructor(private keycloak: KeycloakAngularService) {}
 
   /**
    * Inicializa el perfil del usuario
    */
   private async initializeUserProfile(): Promise<void> {
+    if (!this.initialized) return;
     try {
-      const logged = await this.keycloak.isLoggedIn();
-      this.loggedInSig.set(logged);
-      if (logged) {
-        const profile = await this.keycloak.loadUserProfile();
-        this.userProfileSubject.next(profile);
-      }
+      const profile = await this.keycloak.loadUserProfile();
+      this.userProfileSubject.next(profile);
     } catch (error) {
-      this.loggedInSig.set(false);
       console.error('Error cargando perfil de usuario:', error);
     }
   }
@@ -53,19 +33,17 @@ export class KeycloakService {
   /**
    * Verifica si el usuario está logueado
    */
-  isLoggedIn(): Promise<boolean> {
-    // Aseguramos que retorne Promise<boolean> aunque Keycloak SDK devuelva boolean
-    return Promise.resolve(this.keycloak.isLoggedIn());
-  }
-
-  isLoggedInSync(): boolean {
-    return this.loggedInSig();
+  isLoggedIn(): boolean {
+    // if not initialized, assume the user is not logged in (no auto-initialization)
+    if (!this.initialized) return false;
+    return this.keycloak.isLoggedIn();
   }
 
   /**
    * Obtiene el token de acceso
    */
-  getToken(): Promise<string> {
+  async getToken(): Promise<string> {
+    await this.init();
     return this.keycloak.getToken();
   }
 
@@ -80,6 +58,7 @@ export class KeycloakService {
    * Obtiene los roles del usuario
    */
   getUserRoles(): string[] {
+    if (!this.initialized) return [];
     return this.keycloak.getUserRoles();
   }
 
@@ -87,6 +66,7 @@ export class KeycloakService {
    * Verifica si el usuario tiene un rol específico
    */
   hasRole(role: string): boolean {
+    if (!this.initialized) return false;
     return this.keycloak.isUserInRole(role);
   }
 
@@ -94,6 +74,7 @@ export class KeycloakService {
    * Verifica si el usuario tiene alguno de los roles especificados
    */
   hasAnyRole(roles: string[]): boolean {
+    if (!this.initialized) return false;
     return roles.some(role => this.hasRole(role));
   }
 
@@ -108,30 +89,26 @@ export class KeycloakService {
    * Inicia el proceso de login
    */
   login(): Promise<void> {
-    return (async () => {
-      try {
-        if (!this.initDone) {
-          await this.keycloak.init(keycloakInitOptions);
-          this.initDone = true;
-          const logged = await this.keycloak.isLoggedIn();
-          this.loggedInSig.set(logged);
-        }
-      } catch (e) { console.warn('[KeycloakService] init before login failed', e); }
-      return this.keycloak.login();
-    })();
+    return this.init().then(() => this.keycloak.login());
+  }
+
+  register(): Promise<void> {
+    return this.init().then(() => this.keycloak.register());
   }
 
   /**
    * Cierra la sesión
    */
   logout(): Promise<void> {
-    return this.keycloak.logout();
+    return this.init().then(() => this.keycloak.logout());
   }
 
   /**
    * Obtiene la URL de la cuenta de usuario
    */
   getAccountUrl(): string {
+    // getKeycloakInstance will be available only after init
+    if (!this.initialized) return '';
     return this.keycloak.getKeycloakInstance().createAccountUrl();
   }
 
@@ -166,13 +143,26 @@ export class KeycloakService {
    * Refresca el perfil del usuario
    */
   async refreshUserProfile(): Promise<void> {
-    if (await this.isLoggedIn()) {
-      try {
-        const profile = await this.keycloak.loadUserProfile();
-        this.userProfileSubject.next(profile);
-      } catch (error) {
-        console.error('Error refrescando perfil de usuario:', error);
-      }
+    if (!this.initialized) return;
+    try {
+      const profile = await this.keycloak.loadUserProfile();
+      this.userProfileSubject.next(profile);
+    } catch (error) {
+      console.error('Error refrescando perfil de usuario:', error);
+    }
+  }
+
+  /**
+   * Inicializa Keycloak de forma perezosa si no se inicializó aún.
+   */
+  async init(): Promise<void> {
+    if (this.initialized) return;
+    try {
+      await this.keycloak.init(keycloakInitOptions as any);
+      this.initialized = true;
+      await this.initializeUserProfile();
+    } catch (e) {
+      console.warn('Keycloak init falló, continuando sin Keycloak', e);
     }
   }
 }

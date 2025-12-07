@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { UserProfileService, UserProfile } from '../../core/services/user-profile.service';
+import { inject } from '@angular/core';
+import { KeycloakService } from '../../core/services/keycloak.service';
 
 @Component({
   selector: 'app-topbar',
@@ -11,7 +13,8 @@ import { UserProfileService, UserProfile } from '../../core/services/user-profil
   styleUrls: ['./topbar.css']
 })
 export class TopbarComponent {
-  constructor(public profileSvc: UserProfileService) {}
-  get profile(): UserProfile { return this.profileSvc.profile(); }
-  toggleDark() { document.body.classList.toggle('dark'); }
+	keycloakSvc = inject(KeycloakService);
+	constructor(public profileSvc: UserProfileService) {}
+	get profile(): UserProfile { return this.profileSvc.profile(); }
+	toggleDark() { document.body.classList.toggle('dark'); }
 }

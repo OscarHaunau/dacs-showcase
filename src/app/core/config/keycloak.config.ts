@@ -11,20 +11,27 @@ export const keycloakConfig: KeycloakConfig = {
 };
 
 /**
- * Opciones de inicialización de Keycloak
- * Configurado para evitar problemas de CSP usando standard flow
+ * Obtiene las opciones de inicialización de Keycloak con redirectUri correcto
  */
-export const keycloakInitOptions = {
-  config: keycloakConfig,
-  initOptions: {
-    onLoad: 'check-sso' as KeycloakOnLoad,
-    pkceMethod: 'S256' as KeycloakPkceMethod,
-    checkLoginIframe: false,
-    enableLogging: true
-  },
-  enableBearerInterceptor: false,
-  bearerExcludedUrls: [
-    '/assets',
-    'assets'
-  ]
-};
+export function getKeycloakInitOptions() {
+  return {
+    config: keycloakConfig,
+    initOptions: {
+      onLoad: 'check-sso' as KeycloakOnLoad,
+      pkceMethod: 'S256' as KeycloakPkceMethod,
+      checkLoginIframe: false,
+      enableLogging: true,
+      redirectUri: `${window.location.origin}${window.location.pathname}`
+    },
+    enableBearerInterceptor: false,
+    bearerExcludedUrls: [
+      '/assets',
+      'assets'
+    ]
+  };
+}
+
+/**
+ * Exporta como variable para compatibilidad hacia atrás
+ */
+export const keycloakInitOptions = getKeycloakInitOptions();

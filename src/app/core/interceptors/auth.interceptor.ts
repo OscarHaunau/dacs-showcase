@@ -13,7 +13,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Si la petición es para assets o el usuario no está logueado, no pedimos token ni forzamos login
-    if (this.isAssetRequest(request.url) || !this.keycloakService.isLoggedInSync()) {
+    if (this.isAssetRequest(request.url) || !this.keycloakService.isLoggedIn()) {
       return next.handle(request);
     }
 

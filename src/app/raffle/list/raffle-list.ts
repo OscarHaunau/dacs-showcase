@@ -48,14 +48,6 @@ export class RaffleListComponent {
     this.router.navigate(['/raffle', id]);
   }
 
-  isLoggedIn(): boolean {
-    try {
-      return this.keycloak.isLoggedInSync();
-    } catch (e) {
-      return false;
-    }
-  }
-
   login() {
     this.keycloak.login().catch(e => console.warn('Login error', e));
   }

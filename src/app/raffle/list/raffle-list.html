@@ -14,9 +14,6 @@
       />
     </div>
   </header>
-  <div class="auth-cta" style="margin: 8px 0;">
-    <button class="ghost" *ngIf="!isLoggedIn()" (click)="login()">Iniciar sesión</button>
-  </div>
 
   <div class="count" *ngIf="raffles().length > 0">
     {{ raffles().length }} sorteos encontrados
