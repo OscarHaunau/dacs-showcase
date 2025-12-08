@@ -1,23 +1,21 @@
-<div class="page" *ngIf="raffle as r">
+<div class="page" *ngIf="sorteo as s">
   <header class="topbar">
-    <button class="ghost" (click)="cancel()">← Volver</button>
+    <button class="ghost" (click)="cancelar()">← Volver</button>
     <h3>Checkout</h3>
   </header>
   <section class="card">
     <div class="summary">
-      <div>Sorteo: <strong>{{ r.name }}</strong></div>
-      <div>Número: <strong>{{ number }}</strong></div>
-      <div>Precio: <strong>{{ r.price | number:'1.0-0' }}</strong></div>
+      <div>Sorteo: <strong>{{ s.name }}</strong></div>
+      <div>Número: <strong>{{ numero }}</strong></div>
+      <div>Precio: <strong>{{ s.price | number:'1.0-0' }}</strong></div>
     </div>
     <div class="grid">
-      <label>Nombre <input [(ngModel)]="name"></label>
+      <label>Nombre <input [(ngModel)]="nombre"></label>
       <label>Email <input type="email" [(ngModel)]="email"></label>
-      <label>Teléfono <input [(ngModel)]="phone"></label>
+      <label>Teléfono <input [(ngModel)]="telefono"></label>
     </div>
     <div class="actions">
-      <button class="primary" [disabled]="paying" (click)="submit()">
-        {{ paying ? 'Procesando pago...' : 'Confirmar compra' }}
-      </button>
+      <button class="primary" (click)="confirmar()">Confirmar compra</button>
     </div>
   </section>
 </div>

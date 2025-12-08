@@ -1,0 +1,56 @@
+<div class="page">
+  <header class="topbar">
+    <a class="ghost" routerLink="/profile">← Volver al perfil</a>
+    <h3>Mis Compras</h3>
+  </header>
+
+  <!-- Loading -->
+  <section *ngIf="cargando()" class="card loading-card">
+    <div class="spinner"></div>
+    <p>Cargando tus compras...</p>
+  </section>
+
+  <!-- Error -->
+  <section *ngIf="error() && !cargando()" class="card error-card">
+    <p class="error-text">{{ error() }}</p>
+    <button class="btn-retry" (click)="cargarCompras()">Reintentar</button>
+  </section>
+
+  <!-- Tabla de compras -->
+  <section *ngIf="!cargando() && !error()" class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Sorteo</th>
+          <th>Número</th>
+          <th>Precio</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let compra of compras()">
+          <td>{{ compra.sorteoNombre }}</td>
+          <td class="numero-cell">{{ compra.numero }}</td>
+          <td class="precio-cell">${{ compra.precio | number:'1.0-0' }}</td>
+          <td>
+            <span
+              class="badge-estado"
+              [style.background-color]="obtenerColorEstado(compra.estado)"
+            >
+              {{ obtenerTextoEstado(compra.estado) }}
+            </span>
+          </td>
+          <td>{{ compra.fecha | date:'short' }}</td>
+          <td>
+            <a class="ghost" [routerLink]="['/raffle', compra.sorteoId]">Ver sorteo</a>
+          </td>
+        </tr>
+        <tr *ngIf="compras().length===0">
+          <td colspan="6" class="empty">Aún no tenés compras registradas.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

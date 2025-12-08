@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TermsConsentService } from '../../core/services/terms-consent.service';
@@ -11,9 +11,9 @@ import { TermsConsentService } from '../../core/services/terms-consent.service';
   styleUrls: ['./promo-consent.css']
 })
 export class PromoConsentComponent {
-  checked = false;
+  checked = signal(false);
   constructor(public terms: TermsConsentService) {}
   visible() { return !this.terms.accepted(); }
-  toggleChecked() { this.checked = !this.checked; }
-  accept() { if (this.checked) this.terms.accept(); }
+  toggleChecked() { this.checked.set(!this.checked()); }
+  accept() { if (this.checked()) this.terms.accept(); }
 }

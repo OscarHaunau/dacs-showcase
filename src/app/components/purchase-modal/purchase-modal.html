@@ -1,23 +1,50 @@
 <section *ngIf="visible" class="modal">
   <div class="sheet">
     <h3>Comprar número {{ number }}</h3>
+
+    <!-- Mensaje de error si existe -->
+    <div *ngIf="error" class="error-box">
+      <span class="error-icon">⚠️</span>
+      <p class="error-text">{{ error }}</p>
+    </div>
+
     <form #f="ngForm">
       <div class="field">
         <label>Nombre completo</label>
-        <input name="name" required ngModel />
+        <input name="name" required ngModel [disabled]="cargando" />
       </div>
       <div class="field">
         <label>Email</label>
-        <input name="email" required type="email" ngModel />
+        <input name="email" required type="email" ngModel [disabled]="cargando" />
       </div>
       <div class="field">
         <label>Teléfono</label>
-        <input name="phone" required pattern="^[0-9]+$" ngModel />
+        <input name="phone" required pattern="^[0-9]+$" ngModel [disabled]="cargando" />
       </div>
+
+      <!-- Mensaje de carga -->
+      <div *ngIf="cargando" class="loading-box">
+        <div class="spinner"></div>
+        <p>Procesando tu compra...</p>
+        <p class="loading-subtitle">Serás redirigido a MercadoPago</p>
+      </div>
+
       <div class="actions">
-        <button type="button" class="ghost" (click)="cancel.emit()">Cancelar</button>
-        <button type="button" class="primary" [disabled]="!f.valid || loading" (click)="submit.emit({name: f.value.name, email: f.value.email, phone: f.value.phone})">
-          {{ loading ? 'Procesando pago...' : 'Comprar' }}
+        <button
+          type="button"
+          class="ghost"
+          (click)="cancel.emit()"
+          [disabled]="cargando"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="primary"
+          [disabled]="!f.valid || cargando"
+          (click)="submit.emit({name: f.value.name, email: f.value.email, phone: f.value.phone})"
+        >
+          {{ cargando ? 'Procesando...' : 'Comprar' }}
         </button>
       </div>
     </form>

@@ -15,12 +15,12 @@
     </ul>
 
     <label class="consent">
-      <input type="checkbox" [checked]="checked" (change)="toggleChecked()" />
+      <input type="checkbox" [checked]="checked()" (change)="toggleChecked()" />
       <span>Confirmo haber leído y acepto los <a routerLink="/terms">Términos y Condiciones</a>.</span>
     </label>
     <div class="actions">
       <a class="ghost" routerLink="/terms">Ver T&C</a>
-      <button class="primary" [disabled]="!checked" (click)="accept()">Aceptar y continuar</button>
+      <button class="primary" [disabled]="!checked()" (click)="accept()">Aceptar y continuar</button>
     </div>
   </div>
 </div>

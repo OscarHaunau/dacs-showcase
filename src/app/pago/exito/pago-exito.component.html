@@ -1,0 +1,68 @@
+<div class="page">
+  <!-- Confetti animado -->
+  <div class="confetti" *ngIf="mostrarConfetti()">
+    <span>🎉</span><span>✨</span><span>🟢</span><span>⭐</span><span>💫</span>
+    <span>🎊</span><span>🌟</span><span>💚</span>
+  </div>
+
+  <div class="container">
+    <!-- Estado de carga -->
+    <div *ngIf="cargando()" class="loading">
+      <div class="spinner"></div>
+      <p>Verificando tu pago...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error() && !cargando()" class="error-card">
+      <div class="icon">⚠️</div>
+      <h2>Hubo un problema</h2>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="volverAlSorteo()">
+        Volver a sorteos
+      </button>
+    </div>
+
+    <!-- Éxito -->
+    <div *ngIf="detallesOrden() && !cargando() && !error()" class="success-card">
+      <div class="icon-success">✅</div>
+      <h1>¡Pago confirmado!</h1>
+      <p class="subtitle">Tu número ha sido reservado exitosamente</p>
+
+      <div class="detalles">
+        <div class="detalle-item">
+          <span class="label">Sorteo:</span>
+          <span class="value">{{ detallesOrden()!.sorteoNombre }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Número:</span>
+          <span class="value numero">{{ detallesOrden()!.numero }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Monto pagado:</span>
+          <span class="value precio">${{ detallesOrden()!.precio | number:'1.0-0' }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Comprador:</span>
+          <span class="value">{{ detallesOrden()!.comprador.name }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Email:</span>
+          <span class="value">{{ detallesOrden()!.comprador.email }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Orden:</span>
+          <span class="value codigo">{{ detallesOrden()!.ordenId }}</span>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button class="btn-primary" (click)="volverAlSorteo()">
+          Ver mi sorteo
+        </button>
+        <button class="btn-secondary" (click)="verMisCompras()">
+          Ver mis compras
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

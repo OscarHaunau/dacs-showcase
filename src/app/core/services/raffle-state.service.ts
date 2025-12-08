@@ -1,187 +1,253 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { Buyer, Raffle, RaffleNumber, RaffleNumberStatus } from '../models/raffle';
 
 @Injectable({ providedIn: 'root' })
 export class RaffleStateService {
-  private raffles: Raffle[] = this.generateMockRaffles();
-  private currentId: string | null = null;
-  private results = new Map<string, { ganador: number; respaldo?: number; fuenteNombre?: string; fuenteUrl?: string; fecha: string }>();
+  // Datos en memoria (reemplazar con llamadas HTTP al backend)
+  private sorteosSig = signal<Raffle[]>(this.generarSorteosDePrueba());
+  private idActualSig = signal<string | null>(null);
 
-  setCurrentRaffle(id: string) {
-    this.currentId = id;
+  // Señales computadas para acceso reactivo
+  sorteos = computed(() => this.sorteosSig());
+  sorteoActual = computed(() => {
+    const id = this.idActualSig();
+    return this.sorteosSig().find(s => s.id === id) ?? null;
+  });
+
+  establecerSorteoActual(id: string) {
+    this.idActualSig.set(id);
   }
 
-  getCurrentRaffle(): Raffle | null {
-    if (!this.currentId) {
-      return null;
-    }
-
-    return this.getRaffleById(this.currentId) ?? null;
+  obtenerSorteos(): Raffle[] {
+    return this.sorteosSig();
   }
 
-  getRaffles(): Raffle[] {
-    return [...this.raffles];
+  obtenerSorteoPorId(id: string): Raffle | undefined {
+    return this.sorteosSig().find(s => s.id === id);
   }
 
-  getRaffleById(id: string): Raffle | undefined {
-    return this.raffles.find(r => r.id === id);
+  agregarSorteo(sorteo: Raffle) {
+    this.sorteosSig.set([...this.sorteosSig(), sorteo]);
   }
 
-  addRaffle(raffle: Raffle) {
-    this.raffles = [...this.raffles, raffle];
+  actualizarSorteo(sorteo: Raffle) {
+    this.sorteosSig.set(
+      this.sorteosSig().map(s => s.id === sorteo.id ? sorteo : s)
+    );
   }
 
-  updateRaffle(next: Raffle) {
-    this.raffles = this.raffles.map(r => r.id === next.id ? next : r);
+  establecerNumeros(idSorteo: string, cantidad: number) {
+    const sorteosActualizados = this.sorteosSig().map(sorteo => {
+      if (sorteo.id !== idSorteo) return sorteo;
+
+      // Generar números desde 1 hasta cantidad
+      const numeros: RaffleNumber[] = [];
+      for (let i = 1; i <= cantidad; i++) {
+        numeros.push({
+          number: i,
+          status: 'available' as RaffleNumberStatus
+        });
+      }
+
+      return { ...sorteo, numbers: numeros, buyers: [] };
+    });
+
+    this.sorteosSig.set(sorteosActualizados);
   }
 
-  setNumbers(raffleId: string, count: number) {
-    const raffle = this.getRaffleById(raffleId);
-    if (!raffle) return;
+  actualizarEstadoNumero(
+    idSorteo: string,
+    numero: number,
+    estado: RaffleNumberStatus,
+    comprador?: Buyer
+  ) {
+    const sorteosActualizados = this.sorteosSig().map(sorteo => {
+      if (sorteo.id !== idSorteo) return sorteo;
 
-    const numbers = this.createNumbers(count);
-    const updated = { ...raffle, numbers, buyers: [] };
-    this.updateRaffle(updated);
+      // Actualizar estado del número
+      const numeros = sorteo.numbers.map(n =>
+        n.number === numero ? { ...n, status: estado, buyerId: comprador?.id } : n
+      );
+
+      // Actualizar lista de compradores
+      let compradores = sorteo.buyers;
+
+      if (comprador && estado === 'sold') {
+        // Evitar duplicados: eliminar compra anterior del mismo número y agregar nueva
+        compradores = compradores
+          .filter(c => c.numberBought !== numero)
+          .concat(comprador);
+      }
+
+      if (estado !== 'sold') {
+        // Si el número ya no está vendido, eliminar comprador asociado
+        compradores = compradores.filter(c => c.numberBought !== numero);
+      }
+
+      return { ...sorteo, numbers: numeros, buyers: compradores };
+    });
+
+    this.sorteosSig.set(sorteosActualizados);
   }
 
-  updateNumberStatus(raffleId: string, number: number, status: RaffleNumberStatus, buyer?: Buyer) {
-    const raffle = this.getRaffleById(raffleId);
-    if (!raffle) return;
-
-    const numbers = raffle.numbers.map(n => n.number === number ? { ...n, status, buyerId: buyer?.id } : n);
-    const buyers = this.refreshBuyers(raffle.buyers, status, number, buyer);
-    const updated = { ...raffle, numbers, buyers };
-
-    this.updateRaffle(updated);
-  }
-
-  simulatePurchase(raffleId: string, number: number, buyerData: Omit<Buyer, 'id'|'numberBought'>, onResult: (success: boolean) => void) {
-    if (!this.getRaffleById(raffleId)) return;
-
+  // Simula la compra de un número (reemplazar con llamada HTTP real)
+  comprarNumero(
+    idSorteo: string,
+    numero: number,
+    datosComprador: Omit<Buyer, 'id' | 'numberBought'>,
+    alFinalizar: (exitoso: boolean) => void
+  ) {
     const id = crypto.randomUUID();
-    const buyer: Buyer = { id, ...buyerData, numberBought: number };
-    this.updateNumberStatus(raffleId, number, 'processing');
+    const comprador: Buyer = {
+      id,
+      ...datosComprador,
+      numberBought: numero
+    };
 
+    // Marcar como "procesando" inmediatamente
+    this.actualizarEstadoNumero(idSorteo, numero, 'processing');
+
+    // Simular delay de pago (1.2 segundos, 70% de éxito)
     setTimeout(() => {
-      const success = Math.random() < 0.7;
-      const status = success ? 'sold' : 'available';
+      const exitoso = Math.random() < 0.7;
 
-      this.updateNumberStatus(raffleId, number, status, buyer);
-      onResult(success);
+      if (exitoso) {
+        this.actualizarEstadoNumero(idSorteo, numero, 'sold', comprador);
+      } else {
+        this.actualizarEstadoNumero(idSorteo, numero, 'available');
+      }
+
+      alFinalizar(exitoso);
     }, 1200);
   }
 
-  getStats(raffle: Raffle) {
-    let sold = 0;
-    let processing = 0;
-    let available = 0;
+  // Calcula estadísticas de un sorteo
+  calcularEstadisticas(sorteo: Raffle) {
+    let vendidos = 0;
+    let procesando = 0;
+    let disponibles = 0;
 
-    for (const number of raffle.numbers) {
-      if (number.status === 'sold') sold++;
-      else if (number.status === 'processing') processing++;
-      else available++;
+    for (const numero of sorteo.numbers) {
+      if (numero.status === 'sold') vendidos++;
+      else if (numero.status === 'processing') procesando++;
+      else if (numero.status === 'available') disponibles++;
     }
 
-    const revenue = sold * raffle.price;
-    return { sold, processing, available, revenue };
-  }
-
-  publishResult(raffleId: string, ganador: number, respaldo: number | undefined, fuenteNombre: string | undefined, fuenteUrl: string | undefined) {
-    const fecha = new Date().toISOString();
-    this.results.set(raffleId, { ganador, respaldo, fuenteNombre, fuenteUrl, fecha });
-  }
-
-  getResult(raffleId: string) {
-    return this.results.get(raffleId);
-  }
-
-  private createNumbers(count: number): RaffleNumber[] {
-    const numbers: RaffleNumber[] = [];
-
-    for (let i = 0; i < count; i++) {
-      numbers.push({ number: i + 1, status: 'available' as RaffleNumberStatus });
-    }
-
-    return numbers;
-  }
-
-  private refreshBuyers(existing: Buyer[], status: RaffleNumberStatus, number: number, buyer?: Buyer) {
-    const withoutNumber = existing.filter(b => b.numberBought !== number);
-
-    if (status === 'sold' && buyer) {
-      return [...withoutNumber, buyer];
-    }
-
-    return withoutNumber;
-  }
-
-  private generateMockRaffles(): Raffle[] {
-    const now = new Date();
-    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
-    const fiveDaysFromNow = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString();
-
-    const raffleOne = this.buildMockRaffle(
-      'raffle-eco-bike',
-      'Sorteo Bicicleta EcoX',
-      'Green Raffles',
-      'eco-bike',
-      'Ganá una bicicleta eléctrica EcoX de última generación. Batería de larga duración y diseño moderno.',
-      10000,
-      threeDaysFromNow,
-      [3, 7, 15, 21, 34, 55, 88],
-      [
-        { name: 'María López', email: 'maria@example.com', phone: '1133344455', numberBought: 3 },
-        { name: 'Juan Pérez', email: 'juan@example.com', phone: '1144455566', numberBought: 7 }
-      ]
-    );
-
-    const raffleTwo = this.buildMockRaffle(
-      'raffle-iphone',
-      'iPhone 15 Pro Verde',
-      'Tech Verde',
-      'iphone15pro',
-      'Participá por un iPhone 15 Pro color verde bosque. Tecnología de punta y rendimiento extremo.',
-      25000,
-      fiveDaysFromNow,
-      [1, 2, 10, 50, 99],
-      [
-        { name: 'Ana Torres', email: 'ana@example.com', phone: '1122233344', numberBought: 1 }
-      ]
-    );
-
-    return [raffleOne, raffleTwo];
-  }
-
-  private buildMockRaffle(
-    id: string,
-    name: string,
-    organizer: string,
-    alias: string,
-    description: string,
-    price: number,
-    raffleDate: string,
-    soldNumbers: number[],
-    buyers: Array<Omit<Buyer, 'id'>>
-  ): Raffle {
-    const numbers = this.createNumbers(100).map(n =>
-      soldNumbers.includes(n.number) ? { ...n, status: 'sold' as RaffleNumberStatus } : n
-    );
-
-    const buyersWithIds: Buyer[] = buyers.map(buyer => ({
-      ...buyer,
-      id: crypto.randomUUID(),
-    }));
+    const recaudacion = vendidos * sorteo.price;
 
     return {
-      id,
-      name,
-      organizer,
-      alias,
-      description,
-      raffleDate,
-      price,
-      numbers,
-      buyers: buyersWithIds,
+      vendidos,
+      procesando,
+      disponibles,
+      recaudacion
     };
+  }
+
+  // Gestión de resultados
+  private resultados = new Map<string, {
+    ganador: number;
+    respaldo?: number;
+    fuenteNombre?: string;
+    fuenteUrl?: string;
+    fecha: string;
+  }>();
+
+  publicarResultado(
+    idSorteo: string,
+    ganador: number,
+    respaldo: number | undefined,
+    fuenteNombre: string | undefined,
+    fuenteUrl: string | undefined
+  ) {
+    const fecha = new Date().toISOString();
+    this.resultados.set(idSorteo, {
+      ganador,
+      respaldo,
+      fuenteNombre,
+      fuenteUrl,
+      fecha
+    });
+  }
+
+  obtenerResultado(idSorteo: string) {
+    return this.resultados.get(idSorteo);
+  }
+
+  // Genera datos de prueba (eliminar cuando se conecte con backend real)
+  private generarSorteosDePrueba(): Raffle[] {
+    // Crear 100 números disponibles
+    const crearNumeros = (): RaffleNumber[] => {
+      const numeros: RaffleNumber[] = [];
+      for (let i = 1; i <= 100; i++) {
+        numeros.push({ number: i, status: 'available' });
+      }
+      return numeros;
+    };
+
+    // Marcar algunos números como vendidos para simular actividad
+    const marcarVendidos = (numeros: RaffleNumber[], vendidos: number[]): RaffleNumber[] => {
+      return numeros.map(n =>
+        vendidos.includes(n.number) ? { ...n, status: 'sold' as RaffleNumberStatus } : n
+      );
+    };
+
+    const numerosSorteo1 = marcarVendidos(crearNumeros(), [3, 7, 15, 21, 34, 55, 88]);
+    const numerosSorteo2 = marcarVendidos(crearNumeros(), [1, 2, 10, 50, 99]);
+
+    const compradores1: Buyer[] = [
+      {
+        id: crypto.randomUUID(),
+        name: 'María López',
+        email: 'maria@example.com',
+        phone: '1133344455',
+        numberBought: 3
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Juan Pérez',
+        email: 'juan@example.com',
+        phone: '1144455566',
+        numberBought: 7
+      },
+    ];
+
+    const compradores2: Buyer[] = [
+      {
+        id: crypto.randomUUID(),
+        name: 'Ana Torres',
+        email: 'ana@example.com',
+        phone: '1122233344',
+        numberBought: 1
+      },
+    ];
+
+    const ahora = new Date();
+    const en3Dias = new Date(ahora.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const en5Dias = new Date(ahora.getTime() + 5 * 24 * 60 * 60 * 1000);
+
+    return [
+      {
+        id: 'raffle-eco-bike',
+        name: 'Sorteo Bicicleta EcoX',
+        organizer: 'Green Raffles',
+        alias: 'eco-bike',
+        description: 'Ganá una bicicleta eléctrica EcoX de última generación. Batería de larga duración y diseño moderno.',
+        raffleDate: en3Dias.toISOString(),
+        price: 10000,
+        numbers: numerosSorteo1,
+        buyers: compradores1
+      },
+      {
+        id: 'raffle-iphone',
+        name: 'iPhone 15 Pro Verde',
+        organizer: 'Tech Verde',
+        alias: 'iphone15pro',
+        description: 'Participá por un iPhone 15 Pro color verde bosque. Tecnología de punta y rendimiento extremo.',
+        raffleDate: en5Dias.toISOString(),
+        price: 25000,
+        numbers: numerosSorteo2,
+        buyers: compradores2
+      }
+    ];
   }
 }

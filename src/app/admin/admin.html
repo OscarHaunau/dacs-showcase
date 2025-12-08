@@ -1,36 +1,41 @@
-<div class="page" *ngIf="state.getCurrentRaffle() as r">
+<div class="page" *ngIf="servicio.sorteoActual() as sorteo">
   <header class="topbar">
-    <button class="ghost" (click)="back()">← Volver a sorteos</button>
+    <button class="ghost" (click)="volver()">← Volver a sorteos</button>
     <h3>Panel de Administración</h3>
   </header>
 
-<section class="info">
-  <div class="sub">
-    {{ r.name }} — Organizado por {{ r.organizer }}
-    <span class="alias">(@{{ r.alias }})</span>
-  </div>
+  <section class="info">
+    <div class="sub">
+      {{ sorteo.name }} — Organizado por {{ sorteo.organizer }}
+      <span class="alias">(@{{ sorteo.alias }})</span>
+    </div>
 
-  <div class="actions">
-    <a class="ghost" [routerLink]="['/admin', r.id, 'edit']">Editar sorteo</a>
-    <a class="ghost" [routerLink]="['/admin', r.id, 'resultado']">Publicar resultado</a>
-  </div>
-</section>
-
+    <div class="actions">
+      <a class="ghost" [routerLink]="['/admin', sorteo.id, 'edit']">Editar sorteo</a>
+      <a class="ghost" [routerLink]="['/admin', sorteo.id, 'resultado']">Publicar resultado</a>
+    </div>
+  </section>
 
   <section class="countdown">
     <div class="count-card">
       <div class="label">Tiempo restante para el sorteo</div>
-      <app-countdown [targetIso]="r.raffleDate"></app-countdown>
-      <div class="when">Programado para: {{ r.raffleDate | date:'long' }}</div>
+      <app-countdown [targetIso]="sorteo.raffleDate"></app-countdown>
+      <div class="when">Programado para: {{ sorteo.raffleDate | date:'long' }}</div>
     </div>
   </section>
 
-  <app-stats-cards [sold]="state.getStats(r).sold" [available]="state.getStats(r).available" [processing]="state.getStats(r).processing" [revenue]="state.getStats(r).revenue" [total]="r.numbers.length"></app-stats-cards>
+  <app-stats-cards
+    [sold]="servicio.calcularEstadisticas(sorteo).vendidos"
+    [available]="servicio.calcularEstadisticas(sorteo).disponibles"
+    [processing]="servicio.calcularEstadisticas(sorteo).procesando"
+    [revenue]="servicio.calcularEstadisticas(sorteo).recaudacion"
+    [total]="sorteo.numbers.length"
+  ></app-stats-cards>
 
   <section class="table">
     <div class="toolbar">
-      <button class="ghost" (click)="downloadBuyersCsv()">Exportar CSV</button>
+      <button class="ghost" (click)="exportarCSV()">Exportar CSV</button>
     </div>
-    <app-buyers-table [buyers]="r.buyers"></app-buyers-table>
+    <app-buyers-table [buyers]="sorteo.buyers"></app-buyers-table>
   </section>
 </div>

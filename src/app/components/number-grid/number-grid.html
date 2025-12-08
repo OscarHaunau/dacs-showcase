@@ -1,0 +1,11 @@
+<div class="grid">
+  <button
+    *ngFor="let n of numbers"
+    class="num"
+    [class.available]="n.status==='available'"
+    [class.sold]="n.status==='sold'"
+    [class.processing]="n.status==='processing'"
+    [disabled]="n.status!=='available'"
+    (click)="select.emit(n.number)"
+  >{{ n.number }}</button>
+</div>

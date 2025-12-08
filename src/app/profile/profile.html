@@ -1,0 +1,37 @@
+<section class="profile">
+  <h1>Perfil</h1>
+  <div class="avatar">
+    <img *ngIf="perfil.avatar; else sinAvatar" [src]="perfil.avatar" alt="Avatar"/>
+    <ng-template #sinAvatar>
+      <div class="avatar-placeholder">👤</div>
+    </ng-template>
+  </div>
+
+  <label class="file">
+    <input type="file" accept="image/*" (change)="alSeleccionarArchivo($event)"/>
+    <span>Subir imagen</span>
+  </label>
+
+  <form (ngSubmit)="guardar()" class="form">
+    <label>
+      Nombre
+      <input [(ngModel)]="perfil.name" name="name" />
+    </label>
+    <label>
+      Alias
+      <input [(ngModel)]="perfil.alias" name="alias" />
+    </label>
+    <label>
+      Email
+      <input [(ngModel)]="perfil.email" name="email" type="email" />
+    </label>
+    <label>
+      Rol
+      <select [(ngModel)]="perfil.role" name="role">
+        <option value="user">Usuario</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </label>
+    <button type="submit" class="btn">Guardar cambios</button>
+  </form>
+</section>

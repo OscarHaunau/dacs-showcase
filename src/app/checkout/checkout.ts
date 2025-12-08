@@ -6,8 +6,6 @@ import { RaffleStateService } from '../core/services/raffle-state.service';
 import { Raffle } from '../core/models/raffle';
 import { UserProfileService } from '../core/services/user-profile.service';
 import { ToastService } from '../core/services/toast.service';
-import { MercadoPagoService } from '../core/services/mercado-pago.service';
-import { Buyer } from '../core/models/raffle';
 
 @Component({
   selector: 'app-checkout',
@@ -17,50 +15,57 @@ import { Buyer } from '../core/models/raffle';
   styleUrls: ['./checkout.css']
 })
 export class CheckoutComponent {
-  raffle: Raffle | undefined;
-  number = 0;
-  name = '';
+  sorteo: Raffle | undefined;
+  numero = 0;
+  nombre = '';
   email = '';
-  phone = '';
-  paying = false;
+  telefono = '';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private state: RaffleStateService,
-    private profile: UserProfileService,
-    private toast: ToastService,
-    private gateway: MercadoPagoService
+    private servicio: RaffleStateService,
+    private perfilServicio: UserProfileService,
+    private toast: ToastService
   ) {
     const id = this.route.snapshot.paramMap.get('id')!;
-    const num = Number(this.route.snapshot.paramMap.get('number'));
-    this.number = num;
-    this.raffle = this.state.getRaffleById(id);
-    const p = this.profile.profile();
-    this.name = p.name; this.email = p.email; this.phone = '';
+    const numeroParam = Number(this.route.snapshot.paramMap.get('number'));
+
+    this.numero = numeroParam;
+    this.sorteo = this.servicio.obtenerSorteoPorId(id);
+
+    // Pre-cargar datos del perfil
+    const perfil = this.perfilServicio.profile();
+    this.nombre = perfil.name;
+    this.email = perfil.email;
+    this.telefono = '';
   }
 
-  async submit() {
-    if (!this.raffle || this.paying) return;
+  confirmar() {
+    if (!this.sorteo) return;
 
-    const buyer: Buyer = { id: crypto.randomUUID(), name: this.name, email: this.email, phone: this.phone, numberBought: this.number };
+    this.servicio.comprarNumero(
+      this.sorteo.id,
+      this.numero,
+      {
+        name: this.nombre,
+        email: this.email,
+        phone: this.telefono
+      },
+      (exitoso) => {
+        if (exitoso) {
+          this.toast.show('Compra confirmada. ¡Número vendido!', 'success');
+        } else {
+          this.toast.show('Pago fallido, intenta nuevamente.', 'error');
+        }
+        this.router.navigate(['/raffle', this.sorteo!.id]);
+      }
+    );
+  }
 
-    this.paying = true;
-    this.state.updateNumberStatus(this.raffle.id, this.number, 'processing');
-
-    const result = await this.gateway.pay(this.raffle.price, `${this.raffle.name} número ${this.number}`);
-
-    this.paying = false;
-
-    if (result.success) {
-      this.state.updateNumberStatus(this.raffle.id, this.number, 'sold', buyer);
-      this.toast.show(result.message ?? 'Compra confirmada. ¡Número vendido!', 'success');
-    } else {
-      this.state.updateNumberStatus(this.raffle.id, this.number, 'available');
-      this.toast.show(result.message ?? 'Pago fallido, intenta nuevamente.', 'error');
+  cancelar() {
+    if (this.sorteo) {
+      this.router.navigate(['/raffle', this.sorteo.id]);
     }
-
-    this.router.navigate(['/raffle', this.raffle!.id]);
   }
-
-  cancel() { if (this.raffle) this.router.navigate(['/raffle', this.raffle.id]); }}
+}

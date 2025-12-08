@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastContainerComponent } from './components/toast/toast';
 import { PromoConsentComponent } from './components/promo-consent/promo-consent';
@@ -11,7 +11,7 @@ import { TopbarComponent } from './components/topbar/topbar';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = 'dacs-fe';
+  protected readonly title = signal('dacs-fe');
   toggleDark() {
     document.body.classList.toggle('dark');
   }

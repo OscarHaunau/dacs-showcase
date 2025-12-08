@@ -1,0 +1,78 @@
+<div class="page">
+  <div class="container">
+    <!-- Estado de carga -->
+    <div *ngIf="cargando()" class="loading">
+      <div class="spinner"></div>
+      <p>Verificando tu pago...</p>
+    </div>
+
+    <!-- Error general -->
+    <div *ngIf="error() && !cargando()" class="error-card">
+      <div class="icon">⚠️</div>
+      <h2>Hubo un problema</h2>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="volverASorteos()">
+        Volver a sorteos
+      </button>
+    </div>
+
+    <!-- Pago rechazado -->
+    <div *ngIf="detallesOrden() && !cargando() && !error()" class="rejected-card">
+      <div class="icon-rejected">❌</div>
+      <h1>El pago no pudo procesarse</h1>
+      <p class="subtitle">Tu compra no ha sido completada</p>
+
+      <div class="info-box">
+        <p class="info-text">
+          <strong>¿Qué ocurrió?</strong><br>
+          El pago fue rechazado. Esto puede ocurrir por diferentes motivos:
+        </p>
+        <ul class="motivos-lista">
+          <li>Fondos insuficientes en la tarjeta o cuenta</li>
+          <li>Datos de pago incorrectos</li>
+          <li>Límites de compra excedidos</li>
+          <li>Problemas con el banco emisor</li>
+        </ul>
+        <p class="info-text">
+          No te preocupes, el número quedó liberado y podés volver a intentar.
+        </p>
+      </div>
+
+      <div class="detalles">
+        <div class="detalle-item">
+          <span class="label">Sorteo:</span>
+          <span class="value">{{ detallesOrden()!.sorteoNombre }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Número que intentaste comprar:</span>
+          <span class="value numero">{{ detallesOrden()!.numero }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Monto:</span>
+          <span class="value">${{ detallesOrden()!.precio | number:'1.0-0' }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Orden:</span>
+          <span class="value codigo">{{ detallesOrden()!.ordenId }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Estado:</span>
+          <span class="value estado-rechazado">Rechazado</span>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button class="btn-primary" (click)="reintentar()">
+          Reintentar compra
+        </button>
+        <button class="btn-secondary" (click)="elegirOtroNumero()">
+          Elegir otro número
+        </button>
+      </div>
+
+      <div class="ayuda">
+        <p>¿Necesitás ayuda? <a href="mailto:soporte@rifas.com">Contactanos</a></p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RaffleStateService } from '../../core/services/raffle-state.service';
@@ -13,28 +13,36 @@ import { RaffleCardComponent } from '../../components/raffle-card/raffle-card';
   styleUrls: ['./raffle-list.css']
 })
 export class RaffleListComponent {
-  query = '';
-  raffles: Raffle[] = [];
-  private allRaffles: Raffle[] = [];
+  busqueda = signal('');
+  sorteos = signal<Raffle[]>([]);
 
-  constructor(private state: RaffleStateService, private router: Router) {
-    this.allRaffles = this.state.getRaffles();
-    this.raffles = this.allRaffles;
+  constructor(
+    private servicio: RaffleStateService,
+    private router: Router
+  ) {
+    // Filtrar sorteos en tiempo real según búsqueda
+    effect(() => {
+      const textoBusqueda = this.busqueda().toLowerCase().trim();
+      const todosSorteos = this.servicio.obtenerSorteos();
+
+      if (!textoBusqueda) {
+        this.sorteos.set(todosSorteos);
+        return;
+      }
+
+      const sorteosFiltrados = todosSorteos.filter(sorteo =>
+        sorteo.name.toLowerCase().includes(textoBusqueda) ||
+        sorteo.organizer.toLowerCase().includes(textoBusqueda)
+      );
+
+      this.sorteos.set(sorteosFiltrados);
+    });
+
+    // Cargar sorteos inicialmente
+    this.sorteos.set(this.servicio.obtenerSorteos());
   }
 
-  onSearch(value: string) {
-    this.query = value.toLowerCase().trim();
-    this.raffles = this.query ? this.filterRaffles() : this.allRaffles;
-  }
-
-  viewRaffle(id: string) {
+  verSorteo(id: string) {
     this.router.navigate(['/raffle', id]);
-  }
-
-  private filterRaffles() {
-    return this.allRaffles.filter(r =>
-      r.name.toLowerCase().includes(this.query) ||
-      r.organizer.toLowerCase().includes(this.query)
-    );
   }
 }

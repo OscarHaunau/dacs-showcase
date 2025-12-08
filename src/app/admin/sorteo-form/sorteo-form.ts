@@ -13,105 +13,100 @@ import { Raffle } from '../../core/models/raffle';
   styleUrls: ['./sorteo-form.css']
 })
 export class SorteoFormComponent {
-  mode: 'edit' | 'new' = 'new';
+  modo: 'edit' | 'new' = 'new';
   id: string | null = null;
 
-  name = '';
-  organizer = '';
+  nombre = '';
+  organizador = '';
   alias = '';
-  description = '';
-  raffleDate = '';
-  price = 1;
-  count = 100;
+  descripcion = '';
+  fechaSorteo = '';
+  precio = 1;
+  cantidad = 100;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private state: RaffleStateService
+    private servicio: RaffleStateService
   ) {
-    this.loadRaffleFromRoute();
+    this.id = this.route.snapshot.paramMap.get('id');
+
+    if (this.id) {
+      const sorteo = this.servicio.obtenerSorteoPorId(this.id);
+
+      if (sorteo) {
+        this.modo = 'edit';
+        this.nombre = sorteo.name;
+        this.organizador = sorteo.organizer;
+        this.alias = sorteo.alias;
+        this.descripcion = sorteo.description;
+        this.fechaSorteo = sorteo.raffleDate;
+        this.precio = sorteo.price > 0 ? sorteo.price : 1;
+        this.cantidad = sorteo.numbers.length || 100;
+      }
+    }
   }
 
-  save() {
-    if (this.price <= 0) {
+  guardar() {
+    if (this.precio <= 0) {
       alert('El precio debe ser mayor a 0.');
       return;
     }
 
-    if (this.mode === 'new') {
-      this.createRaffle();
-      return;
+    if (this.modo === 'new') {
+      // Crear nuevo sorteo
+      const ahora = new Date();
+      const id = `raffle-${this.alias || crypto.randomUUID()}`;
+      const cantidadNumeros = 100;
+
+      // Generar números disponibles
+      const numeros = [];
+      for (let i = 1; i <= cantidadNumeros; i++) {
+        numeros.push({
+          number: i,
+          status: 'available' as const
+        });
+      }
+
+      // Fecha por defecto: 3 días desde ahora
+      const fechaPorDefecto = new Date(ahora.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+      const nuevoSorteo: Raffle = {
+        id,
+        name: this.nombre,
+        organizer: this.organizador,
+        alias: this.alias || id,
+        description: this.descripcion,
+        raffleDate: this.fechaSorteo || fechaPorDefecto,
+        price: Number(this.precio),
+        numbers: numeros,
+        buyers: []
+      };
+
+      this.servicio.agregarSorteo(nuevoSorteo);
+      this.router.navigate(['/admin', nuevoSorteo.id]);
+    } else {
+      // Editar sorteo existente
+      const sorteo = this.servicio.obtenerSorteoPorId(this.id!);
+      if (!sorteo) return;
+
+      const sorteoActualizado: Raffle = {
+        ...sorteo,
+        name: this.nombre,
+        organizer: this.organizador,
+        alias: this.alias,
+        description: this.descripcion,
+        raffleDate: this.fechaSorteo,
+        price: Number(this.precio),
+        numbers: sorteo.numbers // La cantidad de números no cambia al editar
+      };
+
+      this.servicio.actualizarSorteo(sorteoActualizado);
+      this.router.navigate(['/admin', sorteo.id]);
     }
-
-    this.updateRaffle();
   }
 
-  cancel() {
+  cancelar() {
     this.router.navigate(['/raffle']);
-  }
-
-  private loadRaffleFromRoute() {
-    this.id = this.route.snapshot.paramMap.get('id');
-    if (!this.id) return;
-
-    const raffle = this.state.getRaffleById(this.id);
-    if (!raffle) return;
-
-    this.mode = 'edit';
-    this.name = raffle.name;
-    this.organizer = raffle.organizer;
-    this.alias = raffle.alias;
-    this.description = raffle.description;
-    this.raffleDate = raffle.raffleDate;
-    this.price = raffle.price > 0 ? raffle.price : 1;
-    this.count = raffle.numbers.length || 100;
-  }
-
-  private createRaffle() {
-    const id = `raffle-${this.alias || crypto.randomUUID()}`;
-    const numbers = this.buildNumbers(100);
-
-    const defaultDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
-
-    const raffle: Raffle = {
-      id,
-      name: this.name,
-      organizer: this.organizer,
-      alias: this.alias || id,
-      description: this.description,
-      raffleDate: this.raffleDate || defaultDate,
-      price: Number(this.price),
-      numbers,
-      buyers: []
-    };
-
-    this.state.addRaffle(raffle);
-    this.router.navigate(['/admin', raffle.id]);
-  }
-
-  private updateRaffle() {
-    const existing = this.id ? this.state.getRaffleById(this.id) : null;
-    if (!existing) return;
-
-    const updated: Raffle = {
-      ...existing,
-      name: this.name,
-      organizer: this.organizer,
-      alias: this.alias,
-      description: this.description,
-      raffleDate: this.raffleDate,
-      price: Number(this.price),
-      numbers: existing.numbers
-    };
-
-    this.state.updateRaffle(updated);
-    this.router.navigate(['/admin', existing.id]);
-  }
-
-  private buildNumbers(count: number) {
-    return Array.from({ length: count }, (_, i) => ({
-      number: i + 1,
-      status: 'available' as const
-    }));
   }
 }

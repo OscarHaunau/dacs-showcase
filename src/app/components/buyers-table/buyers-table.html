@@ -1,20 +1,20 @@
 <div class="toolbar">
-  <input type="text" placeholder="Buscar comprador" (input)="query = $any($event.target).value || ''" />
-  <button class="ghost" (click)="hidePhone = !hidePhone">{{ hidePhone ? 'Mostrar teléfono' : 'Ocultar teléfono' }}</button>
+  <input type="text" placeholder="Buscar comprador" (input)="query.set($any($event.target).value)" />
+  <button class="ghost" (click)="hidePhone.set(!hidePhone())">{{ hidePhone() ? 'Mostrar teléfono' : 'Ocultar teléfono' }}</button>
 </div>
 <div class="table-scroll">
   <table>
     <thead>
-      <tr><th>Nombre</th><th>Email</th><th *ngIf="!hidePhone">Teléfono</th><th>Número</th></tr>
+      <tr><th>Nombre</th><th>Email</th><th *ngIf="!hidePhone()">Teléfono</th><th>Número</th></tr>
     </thead>
     <tbody>
       <tr *ngFor="let b of filtered">
         <td>{{ b.name }}</td>
         <td>{{ b.email }}</td>
-        <td *ngIf="!hidePhone">{{ b.phone }}</td>
+        <td *ngIf="!hidePhone()">{{ b.phone }}</td>
         <td>{{ b.numberBought }}</td>
       </tr>
-      <tr *ngIf="filtered.length===0"><td [attr.colspan]="hidePhone?3:4" class="empty">Sin compradores aún.</td></tr>
+      <tr *ngIf="filtered.length===0"><td [attr.colspan]="hidePhone()?3:4" class="empty">Sin compradores aún.</td></tr>
     </tbody>
   </table>
 </div>

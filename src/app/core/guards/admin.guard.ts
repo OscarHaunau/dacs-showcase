@@ -3,26 +3,41 @@ import { CanActivateFn, Router } from '@angular/router';
 import { UserProfileService } from '../services/user-profile.service';
 import { RaffleStateService } from '../services/raffle-state.service';
 
-export const adminGuard: CanActivateFn = (route) => {
+export const adminGuard: CanActivateFn = (ruta) => {
   const router = inject(Router);
-  const profileSvc = inject(UserProfileService);
-  const state = inject(RaffleStateService);
-  const p = profileSvc.profile();
-  if (p.role !== 'admin') {
+  const perfilServicio = inject(UserProfileService);
+  const sorteoServicio = inject(RaffleStateService);
+
+  const perfil = perfilServicio.profile();
+
+  // Verificar si el usuario es administrador
+  if (perfil.role !== 'admin') {
     router.navigate(['/profile']);
     return false;
   }
-  const id = route.paramMap.get('id');
-  if (!id) return true;
-  const r = state.getRaffleById(id);
-  if (!r) {
+
+  // Si no hay ID en la ruta, permitir acceso (ej: /admin/new)
+  const idSorteo = ruta.paramMap.get('id');
+  if (!idSorteo) {
+    return true;
+  }
+
+  // Verificar que el sorteo existe
+  const sorteo = sorteoServicio.obtenerSorteoPorId(idSorteo);
+  if (!sorteo) {
     router.navigate(['/raffle']);
     return false;
   }
-  const isOwner = r.organizer === p.name || r.alias === p.alias;
-  if (!isOwner) {
-    router.navigate(['/raffle', id]);
+
+  // Verificar que el admin sea dueño del sorteo
+  const esDuenio =
+    sorteo.organizer === perfil.name ||
+    sorteo.alias === perfil.alias;
+
+  if (!esDuenio) {
+    router.navigate(['/raffle', idSorteo]);
     return false;
   }
+
   return true;
 };

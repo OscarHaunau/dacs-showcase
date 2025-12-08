@@ -14,37 +14,37 @@ import { BuyersTableComponent } from '../components/buyers-table/buyers-table';
   styleUrls: ['./admin.css']
 })
 export class AdminComponent {
-  constructor(public state: RaffleStateService, private route: ActivatedRoute, private router: Router) {
+  constructor(
+    public servicio: RaffleStateService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.state.setCurrentRaffle(id);
+    this.servicio.establecerSorteoActual(id);
   }
 
-  back() {
+  volver() {
     this.router.navigate(['/raffle']);
   }
 
-  downloadBuyersCsv() {
-    const raffle = this.state.getCurrentRaffle();
-    if (!raffle) return;
+  exportarCSV() {
+    const sorteo = this.servicio.sorteoActual();
+    if (!sorteo) return;
 
-    const csv = this.createCsvContent(raffle.buyers);
-    const fileName = `${raffle.alias}-compradores.csv`;
+    // Crear filas del CSV
+    const filas = sorteo.buyers.map(comprador =>
+      `${comprador.name},${comprador.email},${comprador.phone},${comprador.numberBought}`
+    );
 
-    this.downloadTextFile(csv, fileName);
-  }
+    // Agregar encabezado
+    const csv = ['Nombre,Email,Telefono,Numero', ...filas].join('\n');
 
-  private createCsvContent(buyers: { name: string; email: string; phone: string; numberBought: number }[]) {
-    const header = 'Nombre,Email,Telefono,Numero';
-    const rows = buyers.map(b => `${b.name},${b.email},${b.phone},${b.numberBought}`);
-    return [header, ...rows].join('\n');
-  }
-
-  private downloadTextFile(content: string, name: string) {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    // Generar archivo y descargarlo
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = name;
+    link.download = `${sorteo.alias}-compradores.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }

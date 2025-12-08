@@ -1,0 +1,22 @@
+<section class="stats">
+  <div class="card">
+    <div class="label">Vendidos</div>
+    <div class="value">{{ sold }}</div>
+    <div class="hint" *ngIf="total > 0">{{ sold / total | percent:'1.0-0' }} completado</div>
+  </div>
+  <div class="card">
+    <div class="label">Disponibles</div>
+    <div class="value">{{ available }}</div>
+    <div class="hint">Números sin vender</div>
+  </div>
+  <div class="card">
+    <div class="label">En proceso</div>
+    <div class="value">{{ processing }}</div>
+    <div class="hint">Pagos pendientes</div>
+  </div>
+  <div class="card">
+    <div class="label">Ingresos</div>
+    <div class="value">${{ revenue | number }}</div>
+    <div class="hint">Monto confirmado</div>
+  </div>
+</section>

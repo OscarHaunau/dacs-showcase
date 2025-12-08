@@ -1,0 +1,70 @@
+<div class="page">
+  <header class="topbar">
+    <button type="button" class="ghost" (click)="cancelar()">← Volver</button>
+    <h3 class="title">
+      {{ modo === 'new' ? 'Nuevo Sorteo' : 'Editar Sorteo' }}
+    </h3>
+  </header>
+
+  <section class="card">
+    <h4 class="card-title">Datos del sorteo</h4>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" [(ngModel)]="nombre" />
+      </div>
+
+      <div class="field">
+        <label for="organizador">Organizador</label>
+        <input id="organizador" [(ngModel)]="organizador" />
+      </div>
+
+      <div class="field">
+        <label for="alias">Alias</label>
+        <input id="alias" [(ngModel)]="alias" />
+      </div>
+
+      <div class="field">
+        <label for="descripcion">Descripción</label>
+        <input id="descripcion" [(ngModel)]="descripcion" />
+      </div>
+
+      <div class="field">
+        <label for="fechaSorteo">Fecha sorteo</label>
+        <input
+          id="fechaSorteo"
+          type="datetime-local"
+          [(ngModel)]="fechaSorteo"
+        />
+      </div>
+
+      <div class="field">
+        <label for="precio">Precio por número</label>
+        <input
+          id="precio"
+          type="number"
+          min="1"
+          [(ngModel)]="precio"
+        />
+        <small class="error" *ngIf="precio <= 0">
+          El precio debe ser mayor a 0.
+        </small>
+      </div>
+
+      <div class="field full">
+        <label for="cantidad">Cantidad de números</label>
+        <input
+          id="cantidad"
+          type="number"
+          [value]="cantidad"
+          readonly
+        />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" type="button" (click)="guardar()">Guardar</button>
+    </div>
+  </section>
+</div>

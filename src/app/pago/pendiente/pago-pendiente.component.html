@@ -1,0 +1,75 @@
+<div class="page">
+  <div class="container">
+    <!-- Estado de carga -->
+    <div *ngIf="cargando()" class="loading">
+      <div class="spinner"></div>
+      <p>Verificando tu pago...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error() && !cargando()" class="error-card">
+      <div class="icon">⚠️</div>
+      <h2>Hubo un problema</h2>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="volverAlSorteo()">
+        Volver a sorteos
+      </button>
+    </div>
+
+    <!-- Pendiente -->
+    <div *ngIf="detallesOrden() && !cargando() && !error()" class="pending-card">
+      <div class="icon-pending">⏳</div>
+      <h1>Pago en proceso</h1>
+      <p class="subtitle">Tu pago está siendo verificado</p>
+
+      <div class="info-box">
+        <p class="info-text">
+          <strong>¿Qué significa esto?</strong><br>
+          Tu pago fue recibido pero está pendiente de confirmación.
+          Esto puede ocurrir con algunos medios de pago como transferencias bancarias
+          o pagos en efectivo en puntos de pago.
+        </p>
+        <p class="info-text">
+          Te notificaremos por email cuando el pago se confirme.
+          Tu número quedará reservado mientras tanto.
+        </p>
+      </div>
+
+      <div class="detalles">
+        <div class="detalle-item">
+          <span class="label">Sorteo:</span>
+          <span class="value">{{ detallesOrden()!.sorteoNombre }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Número:</span>
+          <span class="value numero">{{ detallesOrden()!.numero }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Monto:</span>
+          <span class="value precio">${{ detallesOrden()!.precio | number:'1.0-0' }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Email:</span>
+          <span class="value">{{ detallesOrden()!.comprador.email }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Orden:</span>
+          <span class="value codigo">{{ detallesOrden()!.ordenId }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="label">Estado:</span>
+          <span class="value estado-pendiente">Pendiente de confirmación</span>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button class="btn-primary" (click)="volverAlSorteo()">
+          Volver al sorteo
+        </button>
+        <button class="btn-secondary" (click)="verMisCompras()">
+          Ver mis compras
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

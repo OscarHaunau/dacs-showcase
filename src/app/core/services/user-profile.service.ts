@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 export type UserRole = 'user' | 'admin';
 
@@ -7,20 +7,20 @@ export interface UserProfile {
   alias: string;
   email: string;
   role: UserRole;
-  avatar?: string;
+  avatar?: string; // data URL or external URL
 }
 
 const STORAGE_KEY = 'rifa_user_profile_v1';
 
 @Injectable({ providedIn: 'root' })
 export class UserProfileService {
-  private profileData: UserProfile = this.read();
+  private profileSig = signal<UserProfile>(this.read());
 
-  profile() { return this.profileData; }
+  profile() { return this.profileSig(); }
 
   update(partial: Partial<UserProfile>) {
-    const next = { ...this.profileData, ...partial };
-    this.profileData = next;
+    const next = { ...this.profileSig(), ...partial };
+    this.profileSig.set(next);
     this.persist(next);
   }
 

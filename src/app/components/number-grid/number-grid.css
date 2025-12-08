@@ -1,0 +1,10 @@
+.grid { display:grid; gap:8px; grid-template-columns: repeat(10, 1fr); }
+@media (max-width: 1024px) { .grid { grid-template-columns: repeat(8, 1fr); } }
+@media (max-width: 640px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+.num { aspect-ratio: 1; border-radius:12px; border:none; font-weight:700; }
+.num { min-width: 44px; min-height: 44px; }
+.num.available { background:#22c55e; color:#fff; transition: transform 300ms; }
+.num.available:hover { transform: translateY(-1px); }
+.num.sold { background:#120300; color:#ffffff; }
+.num.processing { background:#facc15; color:#1f2937; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{ filter:brightness(1);} 50%{ filter:brightness(1.1);} }
