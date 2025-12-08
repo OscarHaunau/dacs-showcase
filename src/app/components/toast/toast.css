@@ -1,4 +1,0 @@
-.toast-wrap { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display:flex; flex-direction:column; gap:8px; z-index: 50; }
-.toast { background:#111827; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 10px 18px rgba(0,0,0,0.25); }
-.toast.success { background:#22c55e; }
-.toast.error { background:#ef4444; }
