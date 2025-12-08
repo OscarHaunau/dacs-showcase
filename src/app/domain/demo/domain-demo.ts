@@ -1,0 +1,61 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SorteoDomainService } from '../../core/services/sorteo-domain.service';
+import { MetodoPago } from '../../core/models/domain/enums';
+
+@Component({
+  selector: 'app-domain-demo',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './domain-demo.html',
+  styleUrls: ['./domain-demo.css']
+})
+export class DomainDemoComponent {
+  nombrePremio = 'Televisor LED';
+  descripcionPremio = '50 pulgadas, 4K';
+  valorPremio = 500000;
+  descripcionSorteo = 'Sorteo de verano';
+  precioNumero = 1000;
+
+  inicial = 1;
+  cantidad = 20;
+
+  nombre = 'Juan Perez';
+  dni = '30123456';
+  email = 'juan@example.com';
+  telefono = '1122334455';
+  participanteId: string | null = null;
+
+  numeroValor = 1;
+  metodo = MetodoPago.MP;
+  resultado?: { ok: boolean; mensaje: string; comprobante?: string };
+
+  MetodoPago = MetodoPago;
+
+  constructor(public dom: SorteoDomainService) {}
+
+  crearSorteo() {
+    this.dom.crearSorteo({
+      nombrePremio: this.nombrePremio,
+      descripcionPremio: this.descripcionPremio,
+      valorPremio: this.valorPremio,
+      descripcion: this.descripcionSorteo,
+      precioNumero: Number(this.precioNumero),
+    });
+  }
+
+  generar() {
+    this.dom.generarNumeros(Number(this.inicial), Number(this.cantidad));
+  }
+
+  registrarParticipante() {
+    const p = this.dom.registrarParticipante(this.nombre, this.dni, this.email, this.telefono);
+    this.participanteId = p.id;
+  }
+
+  comprar() {
+    if (!this.participanteId) { this.registrarParticipante(); }
+    this.resultado = this.dom.registrarCompra(this.participanteId!, Number(this.numeroValor), this.metodo);
+  }
+}
